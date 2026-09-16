@@ -1,0 +1,18 @@
+# Virtual environments
+.venv/
+.venv12/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# PyCharm settings
+.idea/
+
+# Model đã train (nặng, không cần push lên nếu không muốn)
+models/*.h5
+
+# File hệ điều hành
+.DS_Store
+Thumbs.db
