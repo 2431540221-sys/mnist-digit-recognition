@@ -1,0 +1,27 @@
+# Frontend
+**/node_modules
+**/dist
+**/.vite
+
+# Backend
+**/__pycache__
+**/*.pyc
+**/.venv
+**/venv
+
+# Docs + meta
+**/.git
+**/.gitignore
+**/docs
+**/.cursor
+**/.idea
+**/.vscode
+**/README.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+**/.env
+**/.env.*

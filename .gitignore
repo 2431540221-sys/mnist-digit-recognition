@@ -6,13 +6,42 @@ venv/
 # Python cache
 __pycache__/
 *.pyc
+*.pyo
 
 # PyCharm settings
 .idea/
+.vscode/
 
-# Model đã train (nặng, không cần push lên nếu không muốn)
-models/*.h5
+# Model files
+# LƯU Ý: model .h5 CẦN được push lên repo để Railway/Render dùng được.
+# Nếu repo > 100MB thì mới nên dùng LFS hoặc mount volume.
+# models/*.h5
 
-# File hệ điều hành
+# Log files (quan trọng: KHÔNG push log lên repo)
+*.log
+backend.log
+backend.err.log
+backend.out.log
+backend_install.log
+frontend.log
+frontend.err.log
+
+# OS
 .DS_Store
 Thumbs.db
+
+# Node / Vite
+node_modules/
+**/node_modules/
+**/.vite/
+**/dist/
+**/.cache/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Test / debug
+test_api.py
+__pycache__/

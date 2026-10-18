@@ -1,746 +1,347 @@
 <template>
-  <div class="app-background">
-    <div class="container glass-panel">
-      <h1>Nhận diện chữ số viết tay</h1>
-
-      <div class="tabs">
-        <button :class="['tab-btn', { active: currentMode === 'single' }]" @click="setMode('single')">Đoán 1 số</button>
-        <button :class="['tab-btn', { active: currentMode === 'multi' }]" @click="setMode('multi')">Đoán nhiều số</button>
-      </div>
-      <p class="subtitle">{{ currentMode === 'single' ? 'Vẽ hoặc tải ảnh 1 chữ số lên' : 'Vẽ hoặc tải ảnh nhiều chữ số — model cắt và đoán từng số' }}</p>
-
-      <!-- KHU VỰC NHẬP DUY NHẤT -->
-      <div class="input-area">
-        <!-- Canvas luôn ở trong DOM (v-show giữ context), ẩn khi có ảnh upload -->
-        <div class="canvas-wrapper" v-show="!uploadedImageDataUrl">
-          <canvas
-            ref="canvasRef"
-            width="280"
-            height="280"
-            @mousedown="startDrawing"
-            @mousemove="draw"
-            @mouseup="stopDrawing"
-            @mouseleave="stopDrawing"
-            @touchstart.prevent="handleTouchStart"
-            @touchmove.prevent="handleTouchMove"
-            @touchend.prevent="stopDrawing"
-          ></canvas>
-        </div>
-        <!-- Preview ảnh upload -->
-        <div v-if="uploadedImageDataUrl" class="image-preview-box">
-          <img :src="uploadedImageDataUrl" class="upload-preview" />
-        </div>
-      </div>
-
-      <input ref="fileInputRef" type="file" accept="image/*" style="display:none" @change="handleFileUpload" />
-
-      <div class="buttons">
-        <button class="btn btn-clear" @click="uploadedImageDataUrl ? clearUpload() : clearCanvas()">Xóa</button>
-        <button class="btn btn-upload" @click="triggerUpload">Tải ảnh lên</button>
-        <button class="btn btn-predict" @click="predict" :disabled="loading">
-          <span v-if="loading" class="spinner"></span>
-          {{ loading ? 'Đang đoán...' : 'Dự đoán' }}
-        </button>
-      </div>
-
-      <!-- LƯU Ý -->
-      <div class="tips-box">
-        <div class="tips-header">📝 <strong>Lưu ý để model đoán chính xác hơn:</strong></div>
-        <ul class="tips-list">
-          <li>Viết cách nhau rõ ràng, đừng để 2 số dính/chạm vào nhau</li>
-          <li>Viết nét đậm, đơn giản, tránh bay bướm hay thêm nét thừa</li>
-          <li>Viết chữ số đủ to, chiếm phần lớn chiều cao khung vẽ</li>
-          <li>Canh chữ số nằm giữa dòng, không quá sát mép trên/dưới</li>
-        </ul>
-      </div>
-
-      <!-- KẾT QUẢ -->
-      <div v-if="results && results.length" class="results-container">
-        <div v-for="(result, index) in results" :key="index" class="result">
-          <p class="predicted">
-            <span v-if="currentMode === 'multi'">Số thứ {{ index + 1 }}: </span>
-            <span v-else>Model đoán: </span>
-            <strong class="glow-text">{{ result.digit }}</strong>
-          </p>
-          <div class="probabilities">
-            <div v-for="(prob, digit) in result.probabilities" :key="digit" class="prob-row">
-              <span class="digit-label">{{ digit }}</span>
-              <div class="prob-bar-bg">
-                <div class="prob-bar-fill" :style="{ width: (prob * 100) + '%' }" :class="{ highlight: Number(digit) === result.digit }"></div>
-              </div>
-              <span class="prob-value">{{ (prob * 100).toFixed(1) }}%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <p v-if="error" class="error">{{ error }}</p>
-
-      <div v-if="history.length" class="history-section">
-        <div class="history-header">
-          <span class="history-title">📋 Lịch sử dự đoán ({{ history.length }})</span>
-          <button class="btn btn-download" @click="downloadHistory">⬇ Tải xuống</button>
-        </div>
-        <div class="history-list">
-          <div v-for="(entry, i) in history" :key="i" class="history-item">
-            <span class="history-time">{{ entry.time }}</span>
-            <span class="history-mode">[{{ entry.mode === 'single' ? '1 số' : 'Nhiều số' }}]</span>
-            <span class="history-digits">→ <strong>{{ entry.digits.join(', ') }}</strong></span>
-          </div>
-        </div>
-      </div>
+  <div class="page">
+    <div class="doodles" aria-hidden="true">
+      <span class="doodle d1">✏️</span>
+      <span class="doodle d2">🌸</span>
+      <span class="doodle d3">⭐</span>
+      <span class="doodle d4">💖</span>
+      <span class="doodle d5">✨</span>
+      <span class="doodle d6">🌷</span>
+      <span class="doodle d7">💫</span>
     </div>
+
+    <main class="card">
+      <header class="header">
+        <div class="header__row">
+          <span class="header__icon" aria-hidden="true">
+            <AppIcon name="brain" :size="34" stroke-width="2.2" tone="pink" />
+          </span>
+          <h1 class="header__title">Nhận diện chữ số</h1>
+        </div>
+        <p class="header__lede">
+          Vẽ hoặc tải ảnh lên — AI sẽ đoán giúp bạn ♡
+        </p>
+      </header>
+
+      <ModeTabs />
+
+      <section class="workspace">
+        <div class="seg" role="tablist" aria-label="Chọn cách nhập">
+          <button
+            role="tab"
+            :aria-selected="inputTab === 'draw'"
+            :class="{ seg__btn: true, 'is-active': inputTab === 'draw' }"
+            @click="setInputTab('draw')"
+          >
+            <AppIcon name="pencil-line" :size="16" />
+            <span>Vẽ tay</span>
+          </button>
+          <button
+            role="tab"
+            :aria-selected="inputTab === 'upload'"
+            :class="{ seg__btn: true, 'is-active': inputTab === 'upload' }"
+            @click="setInputTab('upload')"
+          >
+            <AppIcon name="upload" :size="16" />
+            <span>Tải ảnh</span>
+          </button>
+        </div>
+
+        <div class="stage">
+          <DrawingCanvas v-if="inputTab === 'draw'" />
+          <ImageDropZone v-else @fileSelected="onUploadFile" />
+        </div>
+
+        <BrushToolbar v-if="inputTab === 'draw'" />
+      </section>
+
+      <ActionButtons />
+
+      <TipsBox />
+
+      <section v-if="results && results.length" class="results">
+        <CombinedResult />
+        <ResultCard
+          v-for="(result, index) in results"
+          :key="index"
+          :result="result"
+          :index="index"
+          :multi="currentMode === 'multi'"
+          @select="onSelectAlternative"
+        />
+      </section>
+
+      <ErrorBanner />
+
+      <HistoryList />
+    </main>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
+import AppIcon from './components/AppIcon.vue'
+import ModeTabs from './components/ModeTabs.vue'
+import DrawingCanvas from './components/DrawingCanvas.vue'
+import ImageDropZone from './components/ImageDropZone.vue'
+import BrushToolbar from './components/BrushToolbar.vue'
+import ActionButtons from './components/ActionButtons.vue'
+import TipsBox from './components/TipsBox.vue'
+import ResultCard from './components/ResultCard.vue'
+import CombinedResult from './components/CombinedResult.vue'
+import ErrorBanner from './components/ErrorBanner.vue'
+import HistoryList from './components/HistoryList.vue'
 
-const canvasRef = ref(null)
-const fileInputRef = ref(null)
-let ctx = null
-let drawing = false
+import { useAppState } from './composables/useAppState.js'
+import { usePredict } from './composables/usePredict.js'
 
-const results = ref(null)
-const error = ref('')
-const loading = ref(false)
-const currentMode = ref('single')
-const history = ref([])
-const uploadedImageDataUrl = ref(null) // Lưu ảnh gốc khi user upload (không qua canvas)
+const { currentMode, setUploadedImage } = useAppState()
+const { results, overrideDigit } = usePredict()
 
-function setMode(mode) {
-  currentMode.value = mode
-  clearCanvas()
+const inputTab = ref('draw')
+
+function setInputTab(tab) {
+  inputTab.value = tab
+  setUploadedImage(null)
 }
 
-// Sửa lại URL này nếu backend chạy ở địa chỉ/port khác
-const API_URL = 'http://localhost:5000/predict'
-
-onMounted(() => {
-  ctx = canvasRef.value.getContext('2d')
-  resetCanvasStyle()
-})
-
-function resetCanvasStyle() {
-  ctx.fillStyle = 'black'
-  ctx.fillRect(0, 0, 280, 280)
-  ctx.strokeStyle = 'white'
-  ctx.lineWidth = 15
-  ctx.lineCap = 'round'
+function onUploadFile(dataUrl) {
+  setUploadedImage(dataUrl)
 }
 
-function getPos(e) {
-  const rect = canvasRef.value.getBoundingClientRect()
-  return { x: e.clientX - rect.left, y: e.clientY - rect.top }
-}
-
-function startDrawing(e) {
-  drawing = true
-  const { x, y } = getPos(e)
-  ctx.strokeStyle = 'white'
-  ctx.lineWidth = 15
-  ctx.lineCap = 'round'
-  ctx.beginPath()
-  ctx.moveTo(x, y)
-}
-function draw(e) {
-  if (!drawing) return
-  const { x, y } = getPos(e)
-  ctx.lineTo(x, y)
-  ctx.stroke()
-}
-function stopDrawing() {
-  drawing = false
-}
-
-function handleTouchStart(e) {
-  const touch = e.touches[0]
-  startDrawing(touch)
-}
-function handleTouchMove(e) {
-  const touch = e.touches[0]
-  draw(touch)
-}
-
-function clearCanvas() {
-  resetCanvasStyle()
-  results.value = null
-  error.value = ''
-  uploadedImageDataUrl.value = null
-}
-
-async function predict() {
-  error.value = ''
-  loading.value = true
-  try {
-    // Ưu tiên ảnh upload nếu có, không thì đọc canvas
-    const dataUrl = uploadedImageDataUrl.value || canvasRef.value.toDataURL('image/png')
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: dataUrl, mode: currentMode.value })
-    })
-    if (!res.ok) {
-      const errData = await res.json()
-      throw new Error(errData.error || 'Lỗi từ server')
-    }
-    const data = await res.json()
-    results.value = data.results
-    // Push to history
-    const now = new Date()
-    const timeStr = now.toLocaleString('vi-VN')
-    history.value.unshift({
-      time: timeStr,
-      mode: currentMode.value,
-      digits: data.results.map(r => r.digit)
-    })
-  } catch (err) {
-    error.value = err.message.includes('fetch')
-      ? 'Không kết nối được backend. Kiểm tra đã chạy "python app.py" chưa.'
-      : err.message
-  } finally {
-    loading.value = false
-  }
-}
-
-function triggerUpload() {
-  fileInputRef.value.click()
-}
-
-function handleFileUpload(event) {
-  const file = event.target.files[0]
-  if (!file) return
-  _loadFile(file)
-  event.target.value = ''
-}
-
-function handleDrop(event) {
-  const file = event.dataTransfer.files[0]
-  if (!file) return
-  _loadFile(file)
-}
-
-function _loadFile(file) {
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    uploadedImageDataUrl.value = e.target.result
-    results.value = null
-    error.value = ''
-  }
-  reader.readAsDataURL(file)
-}
-
-function clearUpload() {
-  uploadedImageDataUrl.value = null
-  results.value = null
-  error.value = ''
-  resetCanvasStyle()
-}
-
-function downloadHistory() {
-  if (!history.value.length) return
-  const lines = history.value.map(entry => {
-    const mode = entry.mode === 'single' ? '1 số' : 'Nhiều số'
-    return `[${entry.time}] Chế độ: ${mode} | Kết quả: ${entry.digits.join(', ')}`
-  })
-  const content = 'Lịch sử Dự Đoán Chữ Số Viết Tay\n' + '='.repeat(50) + '\n' + lines.join('\n')
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'lich_su_du_doan.txt'
-  a.click()
-  URL.revokeObjectURL(url)
+function onSelectAlternative({ index, digit }) {
+  overrideDigit(index, digit)
 }
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
 
-body, html {
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
   margin: 0;
   padding: 0;
-  width: 100%;
-  min-height: 100vh;
-  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background-color: #0f172a;
+  font-family: 'Quicksand', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  color: #4a4458;
+  background: #fdf2f8;
+}
+
+button {
+  font-family: inherit;
 }
 </style>
 
 <style scoped>
-.app-background {
+.page {
+  position: relative;
   min-height: 100vh;
+  padding: 40px 16px;
   display: flex;
+  justify-content: center;
+  overflow: hidden;
+  background-color: #fdf2f8;
+  background-image: url('/pencil-pattern.svg'),
+    radial-gradient(ellipse at top left, #fce7f3 0%, transparent 60%),
+    radial-gradient(ellipse at bottom right, #e0e7ff 0%, transparent 60%),
+    linear-gradient(135deg, #fdf2f8 0%, #f5f3ff 50%, #ecfeff 100%);
+  background-size: 320px 320px, auto, auto, auto;
+  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
+  background-attachment: fixed;
+}
+
+/* Doodle trôi nổi */
+.doodles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.doodle {
+  position: absolute;
+  font-size: 28px;
+  opacity: 0.55;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.05));
+  animation: bob 8s ease-in-out infinite;
+}
+
+.d1 { top: 8%; left: 6%; animation-delay: 0s; font-size: 32px; }
+.d2 { top: 18%; right: 8%; animation-delay: -2s; font-size: 24px; }
+.d3 { top: 45%; left: 4%; animation-delay: -4s; font-size: 22px; }
+.d4 { top: 70%; right: 6%; animation-delay: -1s; font-size: 26px; }
+.d5 { bottom: 12%; left: 12%; animation-delay: -3s; font-size: 28px; }
+.d6 { top: 30%; right: 15%; animation-delay: -5s; font-size: 20px; }
+.d7 { bottom: 25%; right: 18%; animation-delay: -6s; font-size: 24px; }
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(-6deg); }
+  50% { transform: translateY(-14px) rotate(6deg); }
+}
+
+.card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 560px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 2px solid #fbcfe8;
+  border-radius: 28px;
+  padding: 32px 28px;
+  box-shadow:
+    0 4px 0 0 #fce7f3,
+    0 12px 32px rgba(236, 72, 153, 0.12),
+    0 24px 48px rgba(168, 85, 247, 0.08);
+}
+
+/* Header */
+.header {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.header__row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.header__icon {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  overflow: hidden;
-  background: 
-    radial-gradient(circle at 15% 50%, rgba(79, 70, 229, 0.2), transparent 40%),
-    radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.2), transparent 40%),
-    #0f172a;
-  animation: pulse-bg 10s ease-in-out infinite alternate;
+  width: 46px;
+  height: 46px;
+  background: linear-gradient(135deg, #fce7f3, #f3e8ff);
+  border: 2px solid #f9a8d4;
+  border-radius: 14px;
+  animation: wiggle 3s ease-in-out infinite;
 }
 
-@keyframes pulse-bg {
-  0% { background-position: 0% 0%; }
-  100% { background-position: 100% 100%; }
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-6deg); }
+  50% { transform: rotate(6deg); }
 }
 
-.container.glass-panel {
-  width: 100%;
-  max-width: 440px;
-  margin: 20px;
-  text-align: center;
-  padding: 40px 30px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: 24px;
-  color: #fff;
-  z-index: 10;
-}
-
-h1 {
+.header__title {
+  margin: 0;
   font-size: 26px;
   font-weight: 700;
-  margin-bottom: 8px;
-  background: linear-gradient(135deg, #a5b4fc, #fbcfe8);
+  background: linear-gradient(135deg, #ec4899, #a855f7, #f472b6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  letter-spacing: -0.01em;
 }
 
-.subtitle {
-  color: #94a3b8;
-  font-size: 14px;
-  margin-bottom: 20px;
-  font-weight: 300;
-}
-
-.tabs {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 24px;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 6px;
-  border-radius: 12px;
-}
-
-.tab-btn {
-  flex: 1;
-  padding: 10px 16px;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  color: #94a3b8;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.tab-btn.active {
-  background: linear-gradient(135deg, #4f46e5, #ec4899);
-  color: white;
-  box-shadow: 0 2px 10px rgba(79, 70, 229, 0.3);
-}
-
-.tab-btn:not(.active):hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-}
-
-.canvas-wrapper {
-  position: relative;
-  display: inline-block;
-  margin-bottom: 24px;
-}
-
-.canvas-wrapper::before {
-  content: '';
-  position: absolute;
-  top: -2px; left: -2px; right: -2px; bottom: -2px;
-  background: linear-gradient(45deg, #4f46e5, #ec4899);
-  z-index: -1;
-  border-radius: 14px;
-  opacity: 0.5;
-  filter: blur(8px);
-  transition: opacity 0.3s;
-}
-
-.canvas-wrapper:hover::before {
-  opacity: 0.8;
-}
-
-canvas {
-  background-color: #000;
-  border-radius: 12px;
-  box-shadow: inset 0 0 20px rgba(255,255,255,0.05);
-  cursor: crosshair;
-  touch-action: none;
-  display: block;
-}
-
-/* Single input area */
-.input-area {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-.image-preview-box {
-  width: 280px;
-  height: 280px;
-  border-radius: 12px;
-  overflow: hidden;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 0 2px rgba(165, 180, 252, 0.3);
-}
-
-.upload-zone:hover {
-  border-color: rgba(165, 180, 252, 0.6);
-  background: rgba(79, 70, 229, 0.08);
-}
-
-.upload-placeholder {
-  text-align: center;
-  color: #64748b;
-}
-
-.upload-icon {
-  font-size: 40px;
-  margin-bottom: 10px;
-}
-
-.upload-placeholder p {
-  color: #94a3b8;
-  font-size: 14px;
-  margin: 0 0 4px;
-}
-
-.upload-placeholder span {
-  font-size: 11px;
-  color: #475569;
-}
-
-.upload-preview {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  border-radius: 14px;
-}
-
-.buttons {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-/* Tips box */
-.tips-box {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
-  padding: 16px 20px;
-  margin: 0 auto 24px;
-  max-width: 480px;
-  text-align: left;
-  backdrop-filter: blur(10px);
-}
-
-.tips-header {
-  font-size: 14px;
-  color: #fbbf24;
-  margin-bottom: 8px;
-}
-
-.tips-list {
+.header__lede {
   margin: 0;
-  padding-left: 20px;
-  color: #cbd5e1;
-  font-size: 13px;
-  line-height: 1.6;
+  color: #8b7a9c;
+  font-size: 14px;
+  font-weight: 500;
 }
 
-.tips-list li {
-  margin-bottom: 4px;
+/* Workspace */
+.workspace {
+  background: linear-gradient(135deg, #fef3f9 0%, #f3e8ff 100%);
+  border: 2px dashed #f9a8d4;
+  border-radius: 22px;
+  padding: 18px;
+  margin-bottom: 18px;
 }
 
-.tips-list li:last-child {
-  margin-bottom: 0;
-}
-
-.btn {
-  padding: 12px 24px;
-  font-size: 15px;
-  font-weight: 600;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* Segmented control - cute */
+.seg {
   display: flex;
+  background: #ffffff;
+  border: 2px solid #fbcfe8;
+  border-radius: 16px;
+  padding: 4px;
+  margin-bottom: 14px;
+  gap: 4px;
+}
+
+.seg__btn {
+  flex: 1;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  color: #a78bfa;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  font-family: inherit;
+  gap: 6px;
 }
 
-.btn:active {
-  transform: scale(0.96);
+.seg__btn:hover:not(.is-active) {
+  background: #fdf2f8;
+  color: #ec4899;
 }
 
-.btn-clear {
-  background: rgba(255, 255, 255, 0.1);
-  color: #e2e8f0;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+.seg__btn.is-active {
+  background: linear-gradient(135deg, #f9a8d4, #c4b5fd);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.25);
 }
 
-.btn-clear:hover {
-  background: rgba(255, 255, 255, 0.2);
+.seg__btn.is-active :deep(.icon) {
+  color: #ffffff;
 }
 
-.btn-upload {
-  background: linear-gradient(135deg, #ec4899, #4f46e5);
-  color: white;
-  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
-  border: none;
+.seg__btn:focus-visible {
+  outline: 2px solid #ec4899;
+  outline-offset: 2px;
 }
 
-.btn-upload:hover {
-  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.5);
-  transform: translateY(-2px);
+.stage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 280px;
+  padding: 4px 0;
 }
 
-.btn-predict {
-  background: linear-gradient(135deg, #4f46e5, #ec4899);
-  color: white;
-  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
-}
-
-.btn-predict:hover:not(:disabled) {
-  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.5);
-  transform: translateY(-2px);
-}
-
-.btn-predict:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  filter: grayscale(0.4);
-  transform: none;
-}
-
-.spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin { 100% { transform: rotate(360deg); } }
-
-.results-container {
-  margin-top: 30px;
+.results {
+  margin-top: 24px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 14px;
 }
 
-.result {
-  background: rgba(0, 0, 0, 0.2);
-  padding: 20px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.05);
-  animation: fadeUp 0.5s ease-out forwards;
+@media (max-width: 520px) {
+  .page {
+    padding: 20px 12px;
+  }
+  .card {
+    padding: 24px 18px;
+    border-radius: 24px;
+  }
+  .header__title {
+    font-size: 22px;
+  }
+  .doodle {
+    font-size: 20px !important;
+  }
 }
 
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.predicted {
-  font-size: 16px;
-  color: #cad5e2;
-  margin-bottom: 20px;
-}
-
-.glow-text {
-  font-size: 32px;
-  color: #fff;
-  text-shadow: 0 0 10px rgba(255,255,255,0.5), 0 0 20px #a5b4fc;
-  vertical-align: middle;
-  margin-left: 8px;
-}
-
-.probabilities {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.prob-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 13px;
-  color: #cbd5e1;
-}
-
-.digit-label {
-  width: 18px;
-  font-weight: 700;
-  text-align: right;
-  color: #f1f5f9;
-}
-
-.prob-bar-bg {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  height: 12px;
-  overflow: hidden;
-  position: relative;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.prob-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #6366f1, #a855f7);
-  border-radius: 8px;
-  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.prob-bar-fill.highlight {
-  background: linear-gradient(90deg, #ec4899, #f43f5e);
-  box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
-}
-
-.prob-value {
-  width: 48px;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  color: #94a3b8;
-}
-
-.error {
-  color: #f87171;
-  background: rgba(248, 113, 113, 0.1);
-  padding: 12px;
-  border-radius: 8px;
-  margin-top: 20px;
-  border: 1px solid rgba(248, 113, 113, 0.2);
-  font-size: 14px;
-}
-
-.history-section {
-  margin-top: 30px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  overflow: hidden;
-  animation: fadeUp 0.5s ease-out forwards;
-}
-
-.history-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.history-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #94a3b8;
-}
-
-.btn-download {
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
-  padding: 7px 14px;
-  font-size: 13px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
-}
-
-.btn-download:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5);
-}
-
-.history-list {
-  max-height: 200px;
-  overflow-y: auto;
-  padding: 8px 0;
-}
-
-.history-list::-webkit-scrollbar {
-  width: 4px;
-}
-.history-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-.history-list::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.15);
-  border-radius: 4px;
-}
-
-.history-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  font-size: 13px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  transition: background 0.2s;
-}
-
-.history-item:last-child {
-  border-bottom: none;
-}
-
-.history-item:hover {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.history-time {
-  color: #64748b;
-  font-size: 11px;
-  min-width: 90px;
-}
-
-.history-mode {
-  color: #7c3aed;
-  font-size: 11px;
-  font-weight: 600;
-  background: rgba(124, 58, 237, 0.15);
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.history-digits {
-  color: #e2e8f0;
-  font-size: 13px;
-}
-
-.history-digits strong {
-  color: #a5b4fc;
-  font-size: 15px;
+@media (prefers-reduced-motion: reduce) {
+  .doodle, .header__icon { animation: none; }
 }
 </style>
