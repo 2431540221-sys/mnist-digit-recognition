@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import os
 from keras.models import load_model
 import numpy as np
 from PIL import Image
@@ -17,7 +18,12 @@ except Exception:
 from preprocessing import preprocess_image, segment_digits, segment_multi_digits
 
 app = Flask(__name__)
-CORS(app)  # Cho phép Vue (chạy ở port khác) gọi API này
+
+# CORS: trong production, chỉ cho phép frontend domain của mình
+# Trong dev, cho phép tất cả để test trên local
+_allowed_origins_env = os.environ.get('FRONTEND_URL', '').strip()
+allowed_origins = [o for o in _allowed_origins_env.split(',') if o] if _allowed_origins_env else '*'
+CORS(app, resources={r'/*': {'origins': allowed_origins}})
 
 # Load model 1 lần duy nhất khi server khởi động
 model = load_model('models/mnist_cnn_model.h5')
