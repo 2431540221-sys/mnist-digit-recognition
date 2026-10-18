@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: mnist-backend
+    runtime: python
+    rootDir: mnist-web/backend
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+    startCommand: "gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 app:app"
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: FLASK_DEBUG
+        value: "0"
+      - key: PORT
+        value: 10000
+
+  - type: static
+    name: mnist-frontend
+    runtime: static
+    rootDir: mnist-web/frontend
+    buildCommand: "npm install && npm run build"
+    publishPath: dist
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: VITE_API_BASE_URL
+        sync: false  # set to backend URL after backend deploys
