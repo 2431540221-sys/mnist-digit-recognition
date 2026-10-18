@@ -1,0 +1,24 @@
+# Frontend
+dist/
+node_modules/
+
+# Backend
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.h5
+!backend/models/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Env
+.env
+.env.local
+.env.*.local

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320">
+  <defs>
+    <pattern id="pencilPattern" x="0" y="0" width="160" height="160" patternUnits="userSpaceOnUse">
+      <!-- Cây bút chì 1 (chéo trái) -->
+      <g transform="translate(20,30) rotate(-20)" opacity="0.18">
+        <rect x="0" y="0" width="8" height="50" fill="#f9a8d4" rx="1"/>
+        <polygon points="0,50 8,50 4,60" fill="#fbbf24"/>
+        <polygon points="3.2,58 4.8,58 4,62" fill="#374151"/>
+        <rect x="0" y="-8" width="8" height="8" fill="#a78bfa" rx="1"/>
+        <rect x="1" y="-10" width="6" height="2" fill="#7c3aed" rx="1"/>
+      </g>
+      <!-- Cây bút chì 2 (chéo ph£i) -->
+      <g transform="translate(110,20) rotate(35)" opacity="0.16">
+        <rect x="0" y="0" width="8" height="55" fill="#a5b4fc" rx="1"/>
+        <polygon points="0,55 8,55 4,65" fill="#fbbf24"/>
+        <polygon points="3.2,63 4.8,63 4,67" fill="#374151"/>
+        <rect x="0" y="-8" width="8" height="8" fill="#fbcfe8" rx="1"/>
+        <rect x="1" y="-10" width="6" height="2" fill="#ec4899" rx="1"/>
+      </g>
+      <!-- Cây bút chì 3 (chéo trái, nhÏ) -->
+      <g transform="translate(60,110) rotate(-50)" opacity="0.14">
+        <rect x="0" y="0" width="7" height="40" fill="#fde68a" rx="1"/>
+        <polygon points="0,40 7,40 3.5,48" fill="#fb923c"/>
+        <polygon points="2.7,46 4.3,46 3.5,50" fill="#374151"/>
+        <rect x="0" y="-7" width="7" height="7" fill="#86efac" rx="1"/>
+        <rect x="0.5" y="-9" width="6" height="2" fill="#16a34a" rx="1"/>
+      </g>
+      <!-- Cây bút chì 4 (chéo ph£i, nhÏ) -->
+      <g transform="translate(120,120) rotate(15)" opacity="0.18">
+        <rect x="0" y="0" width="7" height="42" fill="#c4b5fd" rx="1"/>
+        <polygon points="0,42 7,42 3.5,50" fill="#fbbf24"/>
+        <polygon points="2.7,48 4.3,48 3.5,52" fill="#374151"/>
+        <rect x="0" y="-7" width="7" height="7" fill="#fda4af" rx="1"/>
+        <rect x="0.5" y="-9" width="6" height="2" fill="#be123c" rx="1"/>
+      </g>
+      <!-- Sao nhÏ -->
+      <g transform="translate(40,80)" opacity="0.5">
+        <path d="M 0,-4 L 1,-1 L 4,-1 L 1.5,1 L 2.5,4 L 0,2 L -2.5,4 L -1.5,1 L -4,-1 L -1,-1 Z" fill="#fbbf24"/>
+      </g>
+      <g transform="translate(140,80)" opacity="0.5">
+        <path d="M 0,-3 L 0.8,-0.8 L 3,-0.8 L 1.2,0.8 L 2,3 L 0,1.5 L -2,3 L -1.2,0.8 L -3,-0.8 L -0.8,-0.8 Z" fill="#f9a8d4"/>
+      </g>
+      <g transform="translate(80,40)" opacity="0.45">
+        <path d="M 0,-3 L 0.8,-0.8 L 3,-0.8 L 1.2,0.8 L 2,3 L 0,1.5 L -2,3 L -1.2,0.8 L -3,-0.8 L -0.8,-0.8 Z" fill="#a5b4fc"/>
+      </g>
+      <!-- Trái tim -->
+      <g transform="translate(100,150)" opacity="0.35">
+        <path d="M 0,2 C -3,-2 -7,0 -4,4 L 0,8 L 4,4 C 7,0 3,-2 0,2 Z" fill="#f9a8d4"/>
+      </g>
+      <g transform="translate(20,150)" opacity="0.3">
+        <path d="M 0,1.5 C -2,-1.5 -5,0 -3,3 L 0,6 L 3,3 C 5,0 2,-1.5 0,1.5 Z" fill="#c4b5fd"/>
+      </g>
+      <!-- D¥u ch¥m tròn -->
+      <circle cx="10" cy="10" r="1.5" fill="#fbbf24" opacity="0.4"/>
+      <circle cx="150" cy="40" r="1.5" fill="#a5b4fc" opacity="0.4"/>
+      <circle cx="50" cy="140" r="1.5" fill="#f9a8d4" opacity="0.4"/>
+      <circle cx="130" cy="155" r="1.5" fill="#86efac" opacity="0.4"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#pencilPattern)"/>
+</svg>

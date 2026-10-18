@@ -1,0 +1,11 @@
+{
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "cd frontend && npm ci && npm run build && rm -rf ../backend/static && mkdir -p ../backend/static && cp -r dist/* ../backend/static/"
+  },
+  "deploy": {
+    "startCommand": "cd backend && gunicorn serve_frontend:app --bind 0.0.0.0:$PORT --workers 1 --timeout 180",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 180
+  }
+}
