@@ -7,7 +7,7 @@
       @click="setMode('single')"
     >
       <span class="tab__badge">1</span>
-      <span>chữ số</span>
+      <span>Đơn chữ số</span>
     </button>
     <button
       role="tab"
@@ -16,7 +16,7 @@
       @click="setMode('multi')"
     >
       <span class="tab__badge">123</span>
-      <span>Nhiều số</span>
+      <span>Đa chữ số</span>
     </button>
   </div>
 </template>
@@ -29,60 +29,65 @@ const { currentMode, setMode } = useAppState()
 <style scoped>
 .tabs {
   display: flex;
-  background: #fdf2f8;
-  border: 2px solid #fbcfe8;
-  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
   padding: 4px;
   margin-bottom: 18px;
   gap: 4px;
+  backdrop-filter: blur(10px);
 }
 
 .tab {
   flex: 1;
-  padding: 10px 12px;
+  padding: 10px 14px;
   background: transparent;
-  border: none;
-  border-radius: 12px;
-  color: #a78bfa;
-  font-size: 14px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: #94a3b8;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .tab__badge {
-  background: #ffffff;
-  border: 1.5px solid #f9a8d4;
-  border-radius: 8px;
-  padding: 1px 6px;
-  font-size: 11px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
   font-weight: 700;
-  color: #ec4899;
+  color: #cbd5e1;
   letter-spacing: 0.04em;
+  transition: all 0.2s;
 }
 
 .tab:hover:not(.is-active) {
-  background: #fce7f3;
+  background: rgba(255, 255, 255, 0.04);
+  color: #e2e8f0;
 }
 
 .tab.is-active {
-  background: linear-gradient(135deg, #f9a8d4, #c4b5fd);
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.9) 0%, rgba(6, 182, 212, 0.85) 100%);
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.25);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.35);
 }
 
 .tab.is-active .tab__badge {
-  background: rgba(255, 255, 255, 0.3);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(0, 0, 0, 0.3);
+  color: #67e8f9;
+  border-color: rgba(6, 182, 212, 0.4);
 }
 
 .tab:focus-visible {
-  outline: 2px solid #ec4899;
+  outline: 2px solid #06b6d4;
   outline-offset: 2px;
 }
 </style>

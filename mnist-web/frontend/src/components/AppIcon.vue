@@ -33,6 +33,13 @@ import {
   Star,
   CircleHelp,
   Info,
+  Cpu,
+  Layers,
+  Terminal,
+  Activity,
+  Camera,
+  RotateCcw,
+  Video,
 } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -42,7 +49,6 @@ const props = defineProps({
   tone: {
     type: String,
     default: 'default',
-    validator: (v) => ['default', 'pink', 'purple', 'soft'].includes(v),
   },
 })
 
@@ -69,6 +75,13 @@ const map = {
   star: Star,
   help: CircleHelp,
   info: Info,
+  cpu: Cpu,
+  layers: Layers,
+  terminal: Terminal,
+  activity: Activity,
+  camera: Camera,
+  video: Video,
+  rotate: RotateCcw,
 }
 
 const icon = computed(() => map[props.name] || Sparkles)
@@ -82,7 +95,11 @@ const icon = computed(() => map[props.name] || Sparkles)
 }
 
 .icon--default { color: currentColor; }
+.icon--cyan { color: #06b6d4; }
+.icon--indigo { color: #818cf8; }
+.icon--emerald { color: #10b981; }
+.icon--amber { color: #f59e0b; }
 .icon--pink { color: #ec4899; }
 .icon--purple { color: #a855f7; }
-.icon--soft { color: #f9a8d4; }
+.icon--soft { color: #94a3b8; }
 </style>

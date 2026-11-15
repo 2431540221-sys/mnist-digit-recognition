@@ -18,17 +18,17 @@
 
     <div v-if="!previewSrc" class="drop__prompt">
       <div class="drop__icon">
-        <AppIcon name="upload" :size="32" stroke-width="2" tone="pink" />
+        <AppIcon name="upload" :size="28" stroke-width="2" tone="cyan" />
       </div>
-      <p class="drop__title">Kéo thả ảnh vào đây</p>
-      <p class="drop__sub">hoặc <span class="link">chọn file</span> từ máy</p>
-      <p class="drop__hint">PNG · JPG · ảnh chữ số nha</p>
+      <p class="drop__title">Kéo & thả ảnh vào đây</p>
+      <p class="drop__sub">hoặc <span class="link">chọn file</span> từ thiết bị</p>
+      <p class="drop__hint">PNG · JPG · Tối ưu nền trắng số đen</p>
     </div>
 
     <div v-else class="drop__preview">
       <img :src="previewSrc" alt="Ảnh đã chọn" />
       <button class="drop__swap" @click.stop="triggerPicker" type="button">
-        <AppIcon name="image" :size="14" />
+        <AppIcon name="image" :size="13" />
         <span>Đổi ảnh</span>
       </button>
     </div>
@@ -83,32 +83,33 @@ function readFile(file) {
   position: relative;
   width: 280px;
   height: 280px;
-  border: 3px dashed #f9a8d4;
-  border-radius: 18px;
-  background: #ffffff;
+  border: 1px dashed rgba(6, 182, 212, 0.4);
+  border-radius: 16px;
+  background: rgba(2, 6, 23, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
 .drop:hover {
-  border-color: #ec4899;
-  background: #fdf2f8;
-  transform: translateY(-1px);
+  border-color: #06b6d4;
+  background: rgba(6, 182, 212, 0.05);
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.15), inset 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
 .drop.is-drag {
-  border-color: #a855f7;
+  border-color: #818cf8;
   border-style: solid;
-  background: #f3e8ff;
+  background: rgba(99, 102, 241, 0.15);
   transform: scale(1.02);
 }
 
 .drop.has-image {
   border-style: solid;
-  border-color: #f9a8d4;
+  border-color: rgba(99, 102, 241, 0.4);
   cursor: default;
 }
 
@@ -118,7 +119,7 @@ function readFile(file) {
 
 .drop__prompt {
   text-align: center;
-  color: #6b5b7a;
+  color: #94a3b8;
   padding: 20px;
 }
 
@@ -126,45 +127,40 @@ function readFile(file) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
-  background: linear-gradient(135deg, #fce7f3, #f3e8ff);
-  border: 2px solid #f9a8d4;
-  border-radius: 16px;
+  width: 56px;
+  height: 56px;
+  background: rgba(6, 182, 212, 0.1);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  border-radius: 14px;
   margin-bottom: 12px;
-  animation: bounce 2s ease-in-out infinite;
-}
-
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
 }
 
 .drop__title {
   margin: 0 0 6px;
-  font-size: 15px;
-  font-weight: 700;
-  color: #4a4458;
+  font-size: 14px;
+  font-weight: 600;
+  color: #f1f5f9;
 }
 
 .drop__sub {
-  margin: 0 0 12px;
-  font-size: 13px;
-  color: #8b7a9c;
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: #94a3b8;
 }
 
 .drop__hint {
   margin: 0;
-  font-size: 11px;
-  color: #a78bfa;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #64748b;
   letter-spacing: 0.04em;
-  font-weight: 600;
 }
 
 .link {
-  color: #ec4899;
-  font-weight: 700;
-  text-decoration: underline dotted;
+  color: #38bdf8;
+  font-weight: 600;
+  text-decoration: underline;
   text-underline-offset: 3px;
 }
 
@@ -172,7 +168,7 @@ function readFile(file) {
   position: relative;
   width: 100%;
   height: 100%;
-  background: #ffffff;
+  background: #020617;
   border-radius: 14px;
   overflow: hidden;
 }
@@ -188,22 +184,25 @@ function readFile(file) {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: linear-gradient(135deg, #f9a8d4, #c4b5fd);
-  color: #ffffff;
-  border: none;
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 700;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #f8fafc;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.3);
+  backdrop-filter: blur(8px);
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  transition: all 0.15s ease;
 }
 
 .drop__swap:hover {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: #06b6d4;
+  color: #38bdf8;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.4);
 }
 </style>

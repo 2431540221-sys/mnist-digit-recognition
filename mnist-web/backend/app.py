@@ -84,12 +84,19 @@ def predict():
     img = decode_base64_image(image_data)
 
     if mode == 'single':
-        processed = preprocess_image(img)
+        processed, err_msg = preprocess_image(img)
         if processed is None:
-            return jsonify({'error': 'Không tìm thấy nét vẽ nào'}), 400
+            return jsonify({'error': err_msg or 'Không tìm thấy nét vẽ nào'}), 400
 
         prediction = model.predict(processed)
         result = _build_result(prediction[0])
+
+        # Ngưỡng tin cậy tối thiểu: nếu < 60%, khả năng cao là hình vẽ bậy/không phải số
+        if result['confidence'] < 0.60:
+            return jsonify({
+                'error': f"Độ tin cậy quá thấp ({result['confidence']*100:.1f}%). Hình ảnh không giống chữ số từ 0 đến 9, vui lòng vẽ hoặc chụp rõ ràng hơn."
+            }), 400
+
         return jsonify({
             'digit': result['digit'],
             'confidence': result['confidence'],
@@ -100,15 +107,26 @@ def predict():
         })
     else:
         # Multi-digit: dùng pipeline tối ưu (dilation nhẹ + merge_gap lớn
-        # + projection profile tách tiếp box dính nhau)
-        digit_arrays = segment_multi_digits(img)
-        if len(digit_arrays) == 0:
-            return jsonify({'error': 'Không tìm thấy chữ số nào'}), 400
+        # + projection profile tách tiếp box dính nhau + lọc ảnh chân dung/ngoại cảnh)
+        digit_arrays, err_msg = segment_multi_digits(img)
+        if err_msg or len(digit_arrays) == 0:
+            return jsonify({'error': err_msg or 'Không tìm thấy chữ số hợp lệ nào. Vui lòng kiểm tra lại hình ảnh.'}), 400
 
         batch = np.stack(digit_arrays, axis=0)  # (n, 28, 28, 1)
         predictions = model.predict(batch)
 
         results = [_build_result(pred) for pred in predictions]
+
+        # Kiểm tra độ tin cậy hậu suy luận (Post-inference confidence)
+        confidences = [r['confidence'] for r in results]
+        mean_conf = float(np.mean(confidences))
+        low_conf_count = sum(1 for c in confidences if c < 0.55)
+
+        if mean_conf < 0.65 or (low_conf_count / len(confidences)) >= 0.35:
+            return jsonify({
+                'error': 'Hệ thống không thể nhận diện rõ ràng các chữ số trong ảnh (độ tin cậy quá thấp). Vui lòng đảm bảo ảnh chụp dãy chữ số viết tay rõ ràng trên nền sạch.'
+            }), 400
+
         number_string = ''.join(str(r['digit']) for r in results)
         return jsonify({
             'number': number_string,
@@ -126,10 +144,10 @@ def predict_multi():
         return jsonify({'error': 'Thiếu dữ liệu ảnh'}), 400
 
     img = decode_base64_image(image_data)
-    digit_arrays = segment_multi_digits(img)
+    digit_arrays, err_msg = segment_multi_digits(img)
 
-    if len(digit_arrays) == 0:
-        return jsonify({'error': 'Không tìm thấy chữ số nào'}), 400
+    if err_msg or len(digit_arrays) == 0:
+        return jsonify({'error': err_msg or 'Không tìm thấy chữ số nào'}), 400
 
     batch = np.stack(digit_arrays, axis=0)  # (n, 28, 28, 1)
     predictions = model.predict(batch)
@@ -153,8 +171,8 @@ def debug_segments():
         return jsonify({'error': 'Thiếu dữ liệu ảnh'}), 400
 
     img = decode_base64_image(image_data)
-    digit_arrays_single = segment_digits(img, merge_gap=10, dilate_iter=3)
-    digit_arrays_multi  = segment_multi_digits(img)
+    digit_arrays_single, _ = segment_digits(img, merge_gap=10, dilate_iter=3)
+    digit_arrays_multi, _  = segment_multi_digits(img)
 
     return jsonify({
         'so_luong_tach_duoc_single_mode': len(digit_arrays_single),

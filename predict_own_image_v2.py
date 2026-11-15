@@ -47,10 +47,21 @@ def preprocess_image(image_path):
         new_h = max(1, int(h * 20 / w))
     digit_img = digit_img.resize((new_w, new_h))
 
-    # 7. Đặt vào giữa khung 28x28
-    canvas = Image.new('L', (28, 28), color=0)
-    upper_left = ((28 - new_w) // 2, (28 - new_h) // 2)
-    canvas.paste(digit_img, upper_left)
+    # 7. Đặt vào giữa khung 28x28 và căn theo Center of Mass (Trọng tâm)
+    import cv2
+    canvas_arr = np.zeros((28, 28), dtype=np.float32)
+    upper_left_x = (28 - new_w) // 2
+    upper_left_y = (28 - new_h) // 2
+    canvas_arr[upper_left_y:upper_left_y + new_h, upper_left_x:upper_left_x + new_w] = np.array(digit_img, dtype=np.float32)
+
+    M = cv2.moments(canvas_arr)
+    if M['m00'] > 0:
+        shift_x = float(np.clip(14.0 - (M['m10'] / M['m00']), -4.0, 4.0))
+        shift_y = float(np.clip(14.0 - (M['m01'] / M['m00']), -4.0, 4.0))
+        M_shift = np.float32([[1, 0, shift_x], [0, 1, shift_y]])
+        canvas_arr = cv2.warpAffine(canvas_arr, M_shift, (28, 28), borderMode=cv2.BORDER_CONSTANT, borderValue=0)
+
+    canvas = Image.fromarray(canvas_arr.astype(np.uint8))
 
     # 8. Lưu ảnh debug vào thư mục outputs
     os.makedirs(OUTPUTS_DIR, exist_ok=True)
@@ -60,8 +71,8 @@ def preprocess_image(image_path):
     print(f"Đã lưu ảnh sau xử lý vào {debug_path}")
 
     # 9. Chuẩn hóa dữ liệu
-    final_array = np.array(canvas).astype('float32') / 255
-    final_array = final_array.reshape(1, 28, 28, 1)
+    final_array = canvas_arr / 255.0
+    final_array = final_array.reshape(1, 28, 28, 1).astype('float32')
     return final_array
 
 

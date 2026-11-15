@@ -1,7 +1,7 @@
 <template>
   <div class="actions">
     <button class="btn btn--ghost" type="button" @click="onClear">
-      <AppIcon name="trash" :size="16" />
+      <AppIcon name="trash" :size="15" />
       <span>Xóa hết</span>
     </button>
     <button
@@ -11,8 +11,8 @@
       @click="onPredict"
     >
       <span v-if="loading" class="spinner" aria-hidden="true"></span>
-      <AppIcon v-else name="sparkles" :size="16" />
-      <span>{{ loading ? 'Đang đoán…' : 'Dự đoán' }}</span>
+      <AppIcon v-else name="sparkles" :size="15" />
+      <span>{{ loading ? 'Đang phân tích…' : 'Nhận diện ngay' }}</span>
     </button>
   </div>
 </template>
@@ -39,7 +39,7 @@ async function onPredict() {
   try {
     await predict(dataUrl, currentMode.value)
     const now = new Date()
-    const timeStr = now.toLocaleString('vi-VN')
+    const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
     const { results } = usePredict()
     addHistory({
       time: timeStr,
@@ -56,56 +56,62 @@ async function onPredict() {
 .actions {
   display: flex;
   gap: 10px;
-  margin-bottom: 18px;
+  margin-top: 14px;
+  margin-bottom: 16px;
 }
 
 .btn {
   flex: 1;
-  padding: 12px 16px;
-  font-size: 14px;
-  font-weight: 700;
-  border-radius: 14px;
-  border: 2px solid transparent;
+  padding: 12px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 12px;
+  border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
+  letter-spacing: 0.02em;
 }
 
 .btn:focus-visible {
-  outline: 2px solid #ec4899;
+  outline: 2px solid #06b6d4;
   outline-offset: 2px;
 }
 
 .btn--ghost {
-  background: #ffffff;
-  border-color: #fbcfe8;
-  color: #a855f7;
+  background: rgba(15, 23, 42, 0.7);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  backdrop-filter: blur(10px);
 }
 
 .btn--ghost:hover {
-  background: #fdf2f8;
-  border-color: #f9a8d4;
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #f1f5f9;
   transform: translateY(-1px);
 }
 
 .btn--primary {
-  background: linear-gradient(135deg, #f9a8d4, #c4b5fd);
+  background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
   color: #ffffff;
-  border-color: transparent;
   flex: 2;
-  box-shadow: 0 4px 14px rgba(236, 72, 153, 0.3);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 18px rgba(79, 70, 229, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .btn--primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
+  box-shadow: 0 6px 24px rgba(6, 182, 212, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .btn--primary:disabled {
-  background: #d8b4d8;
+  background: #1e293b;
+  color: #64748b;
+  border-color: transparent;
   cursor: not-allowed;
   box-shadow: none;
   transform: none;
@@ -114,10 +120,10 @@ async function onPredict() {
 .spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: #ffffff;
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin 0.7s linear infinite;
 }
 
 @keyframes spin {

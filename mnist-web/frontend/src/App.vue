@@ -1,80 +1,168 @@
 <template>
   <div class="page">
-    <div class="doodles" aria-hidden="true">
-      <span class="doodle d1">✏️</span>
-      <span class="doodle d2">🌸</span>
-      <span class="doodle d3">⭐</span>
-      <span class="doodle d4">💖</span>
-      <span class="doodle d5">✨</span>
-      <span class="doodle d6">🌷</span>
-      <span class="doodle d7">💫</span>
+    <!-- Ambient Tech Glow Background -->
+    <div class="ambient-glow" aria-hidden="true">
+      <div class="glow-orb glow-orb--1"></div>
+      <div class="glow-orb glow-orb--2"></div>
+      <div class="grid-overlay"></div>
     </div>
 
-    <main class="card">
-      <header class="header">
-        <div class="header__row">
-          <span class="header__icon" aria-hidden="true">
-            <AppIcon name="brain" :size="34" stroke-width="2.2" tone="pink" />
-          </span>
-          <h1 class="header__title">Nhận diện chữ số</h1>
+    <div class="app-shell">
+      <!-- Top Header / Telemetry Bar -->
+      <header class="top-nav">
+        <div class="brand">
+          <div class="brand__icon">
+            <AppIcon name="cpu" :size="20" tone="cyan" />
+          </div>
+          <div>
+            <h1 class="brand__title">MNIST NEURAL LAB</h1>
+            <p class="brand__subtitle">Hệ thống Nhận diện Chữ số Viết tay · Computer Vision</p>
+          </div>
         </div>
-        <p class="header__lede">
-          Vẽ hoặc tải ảnh lên — AI sẽ đoán giúp bạn ♡
-        </p>
+
+        <div class="telemetry">
+          <div class="telemetry__item">
+            <span class="telemetry__dot"></span>
+            <span class="telemetry__label">STATUS:</span>
+            <span class="telemetry__val telemetry__val--green">READY</span>
+          </div>
+          <div class="telemetry__item telemetry__item--hide-mobile">
+            <span class="telemetry__label">MODEL:</span>
+            <span class="telemetry__val">CNN-4BLOCK</span>
+          </div>
+          <div class="telemetry__item telemetry__item--hide-mobile">
+            <span class="telemetry__label">ACCURACY:</span>
+            <span class="telemetry__val telemetry__val--cyan">99.47%</span>
+          </div>
+        </div>
       </header>
 
-      <ModeTabs />
+      <!-- Main Studio Dashboard -->
+      <main class="dashboard">
+        <!-- LEFT COLUMN: Input Workspace -->
+        <section class="card card--studio">
+          <div class="card__head">
+            <div class="card__head-title">
+              <AppIcon name="layers" :size="16" tone="cyan" />
+              <span>KHÔNG GIAN NHẬP LIỆU</span>
+            </div>
+          </div>
 
-      <section class="workspace">
-        <div class="seg" role="tablist" aria-label="Chọn cách nhập">
-          <button
-            role="tab"
-            :aria-selected="inputTab === 'draw'"
-            :class="{ seg__btn: true, 'is-active': inputTab === 'draw' }"
-            @click="setInputTab('draw')"
-          >
-            <AppIcon name="pencil-line" :size="16" />
-            <span>Vẽ tay</span>
-          </button>
-          <button
-            role="tab"
-            :aria-selected="inputTab === 'upload'"
-            :class="{ seg__btn: true, 'is-active': inputTab === 'upload' }"
-            @click="setInputTab('upload')"
-          >
-            <AppIcon name="upload" :size="16" />
-            <span>Tải ảnh</span>
-          </button>
-        </div>
+          <ModeTabs />
 
-        <div class="stage">
-          <DrawingCanvas v-if="inputTab === 'draw'" />
-          <ImageDropZone v-else @fileSelected="onUploadFile" />
-        </div>
+          <div class="seg" role="tablist" aria-label="Chọn phương thức vẽ">
+            <button
+              role="tab"
+              :aria-selected="inputTab === 'draw'"
+              :class="{ seg__btn: true, 'is-active': inputTab === 'draw' }"
+              @click="setInputTab('draw')"
+            >
+              <AppIcon name="pencil-line" :size="14" />
+              <span>Vẽ tay</span>
+            </button>
+            <button
+              role="tab"
+              :aria-selected="inputTab === 'upload'"
+              :class="{ seg__btn: true, 'is-active': inputTab === 'upload' }"
+              @click="setInputTab('upload')"
+            >
+              <AppIcon name="upload" :size="14" />
+              <span>Tải ảnh</span>
+            </button>
+            <button
+              role="tab"
+              :aria-selected="inputTab === 'camera'"
+              :class="{ seg__btn: true, 'is-active': inputTab === 'camera' }"
+              @click="setInputTab('camera')"
+            >
+              <AppIcon name="camera" :size="14" />
+              <span>Webcam</span>
+            </button>
+          </div>
 
-        <BrushToolbar v-if="inputTab === 'draw'" />
-      </section>
+          <div class="stage">
+            <DrawingCanvas v-if="inputTab === 'draw'" />
+            <ImageDropZone v-else-if="inputTab === 'upload'" @fileSelected="onUploadFile" />
+            <CameraCapture v-else-if="inputTab === 'camera'" @captured="onCameraCapture" @retake="onCameraRetake" />
+          </div>
 
-      <ActionButtons />
+          <BrushToolbar v-if="inputTab === 'draw'" />
 
-      <TipsBox />
+          <ActionButtons />
 
-      <section v-if="results && results.length" class="results">
-        <CombinedResult />
-        <ResultCard
-          v-for="(result, index) in results"
-          :key="index"
-          :result="result"
-          :index="index"
-          :multi="currentMode === 'multi'"
-          @select="onSelectAlternative"
-        />
-      </section>
+          <ErrorBanner />
 
-      <ErrorBanner />
+          <TipsBox />
+        </section>
 
-      <HistoryList />
-    </main>
+        <!-- RIGHT COLUMN: Neural Inference & Diagnostics -->
+        <section class="card card--inference">
+          <div class="card__head">
+            <div class="card__head-title">
+              <AppIcon name="activity" :size="16" tone="indigo" />
+              <span>KẾT QUẢ SUY LUẬN AI</span>
+            </div>
+            <span class="card__badge">INFERENCE ENGINE</span>
+          </div>
+
+          <!-- Khi đã có kết quả dự đoán -->
+          <div v-if="results && results.length" class="results-stream">
+            <CombinedResult />
+            <ResultCard
+              v-for="(result, index) in results"
+              :key="index"
+              :result="result"
+              :index="index"
+              :multi="currentMode === 'multi'"
+              @select="onSelectAlternative"
+            />
+          </div>
+
+          <!-- Khi chưa dự đoán (Trạng thái chờ) -->
+          <div v-else class="idle-terminal">
+            <div class="radar-box">
+              <div class="radar-ring radar-ring--1"></div>
+              <div class="radar-ring radar-ring--2"></div>
+              <div class="radar-sweep"></div>
+              <AppIcon name="brain" :size="32" tone="cyan" class="radar-center-icon" />
+            </div>
+
+            <h3 class="idle-title">ĐANG CHỜ TÍN HIỆU ĐẦU VÀO</h3>
+            <p class="idle-desc">
+              Vẽ một hoặc nhiều chữ số vào bảng vẽ bên trái rồi nhấn <strong>"Nhận diện ngay"</strong> để kích hoạt mạng nơ-ron tích chập (CNN).
+            </p>
+
+            <div class="pipeline-spec">
+              <div class="pipeline-spec__head">
+                <AppIcon name="terminal" :size="12" tone="cyan" />
+                <span>PIPELINE XỬ LÝ ẢNH & KIẾN TRÚC MẠNG</span>
+              </div>
+              <div class="pipeline-spec__steps">
+                <div class="pipeline-step">
+                  <span class="pipeline-step__num">01</span>
+                  <span>Gaussian Blur + Otsu Thresholding</span>
+                </div>
+                <div class="pipeline-step">
+                  <span class="pipeline-step__num">02</span>
+                  <span>Contour Segment + Aspect-Ratio 20×20</span>
+                </div>
+                <div class="pipeline-step">
+                  <span class="pipeline-step__num">03</span>
+                  <span class="pipeline-step__highlight">Center of Mass (COM) Alignment</span>
+                </div>
+                <div class="pipeline-step">
+                  <span class="pipeline-step__num">04</span>
+                  <span>CNN 4-Conv2D + BatchNorm + Softmax</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lịch sử dự đoán -->
+          <HistoryList />
+        </section>
+      </main>
+    </div>
   </div>
 </template>
 
@@ -84,6 +172,7 @@ import AppIcon from './components/AppIcon.vue'
 import ModeTabs from './components/ModeTabs.vue'
 import DrawingCanvas from './components/DrawingCanvas.vue'
 import ImageDropZone from './components/ImageDropZone.vue'
+import CameraCapture from './components/CameraCapture.vue'
 import BrushToolbar from './components/BrushToolbar.vue'
 import ActionButtons from './components/ActionButtons.vue'
 import TipsBox from './components/TipsBox.vue'
@@ -109,13 +198,21 @@ function onUploadFile(dataUrl) {
   setUploadedImage(dataUrl)
 }
 
+function onCameraCapture(dataUrl) {
+  setUploadedImage(dataUrl)
+}
+
+function onCameraRetake() {
+  setUploadedImage(null)
+}
+
 function onSelectAlternative({ index, digit }) {
   overrideDigit(index, digit)
 }
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
 
 *,
 *::before,
@@ -127,12 +224,13 @@ html,
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Quicksand', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  font-size: 15px;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  color: #4a4458;
-  background: #fdf2f8;
+  color: #94a3b8;
+  background: #020617;
+  overflow-x: hidden;
 }
 
 button {
@@ -144,22 +242,14 @@ button {
 .page {
   position: relative;
   min-height: 100vh;
-  padding: 40px 16px;
+  padding: 24px 16px 40px;
   display: flex;
   justify-content: center;
-  overflow: hidden;
-  background-color: #fdf2f8;
-  background-image: url('/pencil-pattern.svg'),
-    radial-gradient(ellipse at top left, #fce7f3 0%, transparent 60%),
-    radial-gradient(ellipse at bottom right, #e0e7ff 0%, transparent 60%),
-    linear-gradient(135deg, #fdf2f8 0%, #f5f3ff 50%, #ecfeff 100%);
-  background-size: 320px 320px, auto, auto, auto;
-  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
-  background-attachment: fixed;
+  background-color: #020617;
 }
 
-/* Doodle trôi nổi */
-.doodles {
+/* Ambient glow & grid */
+.ambient-glow {
   position: fixed;
   inset: 0;
   pointer-events: none;
@@ -167,181 +257,367 @@ button {
   overflow: hidden;
 }
 
-.doodle {
+.glow-orb {
   position: absolute;
-  font-size: 28px;
-  opacity: 0.55;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.05));
-  animation: bob 8s ease-in-out infinite;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.28;
 }
 
-.d1 { top: 8%; left: 6%; animation-delay: 0s; font-size: 32px; }
-.d2 { top: 18%; right: 8%; animation-delay: -2s; font-size: 24px; }
-.d3 { top: 45%; left: 4%; animation-delay: -4s; font-size: 22px; }
-.d4 { top: 70%; right: 6%; animation-delay: -1s; font-size: 26px; }
-.d5 { bottom: 12%; left: 12%; animation-delay: -3s; font-size: 28px; }
-.d6 { top: 30%; right: 15%; animation-delay: -5s; font-size: 20px; }
-.d7 { bottom: 25%; right: 18%; animation-delay: -6s; font-size: 24px; }
-
-@keyframes bob {
-  0%, 100% { transform: translateY(0) rotate(-6deg); }
-  50% { transform: translateY(-14px) rotate(6deg); }
+.glow-orb--1 {
+  top: -10%;
+  left: 15%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, #4f46e5 0%, transparent 70%);
 }
 
-.card {
+.glow-orb--2 {
+  bottom: 0%;
+  right: 15%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, #06b6d4 0%, transparent 70%);
+}
+
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.app-shell {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 560px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 2px solid #fbcfe8;
-  border-radius: 28px;
-  padding: 32px 28px;
-  box-shadow:
-    0 4px 0 0 #fce7f3,
-    0 12px 32px rgba(236, 72, 153, 0.12),
-    0 24px 48px rgba(168, 85, 247, 0.08);
+  max-width: 1080px;
 }
 
-/* Header */
-.header {
-  margin-bottom: 24px;
-  text-align: center;
-}
-
-.header__row {
-  display: inline-flex;
+/* Top Nav */
+.top-nav {
+  display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  backdrop-filter: blur(16px);
+  margin-bottom: 20px;
+  gap: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
-.header__icon {
-  display: inline-flex;
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(6, 182, 212, 0.1);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 46px;
-  height: 46px;
-  background: linear-gradient(135deg, #fce7f3, #f3e8ff);
-  border: 2px solid #f9a8d4;
-  border-radius: 14px;
-  animation: wiggle 3s ease-in-out infinite;
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
 }
 
-@keyframes wiggle {
-  0%, 100% { transform: rotate(-6deg); }
-  50% { transform: rotate(6deg); }
-}
-
-.header__title {
+.brand__title {
   margin: 0;
-  font-size: 26px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  font-weight: 800;
+  color: #f8fafc;
+  letter-spacing: 0.06em;
+}
+
+.brand__subtitle {
+  margin: 0;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.telemetry {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.telemetry__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(2, 6, 23, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+}
+
+.telemetry__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+.telemetry__label {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.telemetry__val {
+  color: #cbd5e1;
   font-weight: 700;
-  background: linear-gradient(135deg, #ec4899, #a855f7, #f472b6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.01em;
 }
 
-.header__lede {
-  margin: 0;
-  color: #8b7a9c;
-  font-size: 14px;
-  font-weight: 500;
+.telemetry__val--green {
+  color: #34d399;
 }
 
-/* Workspace */
-.workspace {
-  background: linear-gradient(135deg, #fef3f9 0%, #f3e8ff 100%);
-  border: 2px dashed #f9a8d4;
+.telemetry__val--cyan {
+  color: #38bdf8;
+}
+
+/* Dashboard 2-column layout */
+.dashboard {
+  display: grid;
+  grid-template-columns: 440px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 920px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+  .telemetry__item--hide-mobile {
+    display: none;
+  }
+}
+
+/* Cards */
+.card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 22px;
-  padding: 18px;
-  margin-bottom: 18px;
+  padding: 22px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
-/* Segmented control - cute */
+.card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.card__head-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: 0.06em;
+}
+
+.card__badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: #818cf8;
+  letter-spacing: 0.06em;
+}
+
+/* Segmented tab */
 .seg {
   display: flex;
-  background: #ffffff;
-  border: 2px solid #fbcfe8;
-  border-radius: 16px;
+  background: rgba(2, 6, 23, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
   padding: 4px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   gap: 4px;
 }
 
 .seg__btn {
   flex: 1;
-  padding: 10px 12px;
+  padding: 8px 12px;
   background: transparent;
   border: none;
-  border-radius: 12px;
-  color: #a78bfa;
-  font-size: 14px;
+  border-radius: 8px;
+  color: #64748b;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
+  transition: all 0.15s ease;
 }
 
 .seg__btn:hover:not(.is-active) {
-  background: #fdf2f8;
-  color: #ec4899;
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .seg__btn.is-active {
-  background: linear-gradient(135deg, #f9a8d4, #c4b5fd);
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.25);
-}
-
-.seg__btn.is-active :deep(.icon) {
-  color: #ffffff;
-}
-
-.seg__btn:focus-visible {
-  outline: 2px solid #ec4899;
-  outline-offset: 2px;
+  background: rgba(30, 41, 59, 0.85);
+  color: #38bdf8;
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .stage {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 280px;
-  padding: 4px 0;
+  margin: 4px 0 10px;
 }
 
-.results {
-  margin-top: 24px;
+/* Idle State in Right Column */
+.idle-terminal {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  align-items: center;
+  text-align: center;
+  padding: 36px 20px 24px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: rgba(2, 6, 23, 0.4);
 }
 
-@media (max-width: 520px) {
-  .page {
-    padding: 20px 12px;
-  }
-  .card {
-    padding: 24px 18px;
-    border-radius: 24px;
-  }
-  .header__title {
-    font-size: 22px;
-  }
-  .doodle {
-    font-size: 20px !important;
-  }
+.radar-box {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .doodle, .header__icon { animation: none; }
+.radar-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(6, 182, 212, 0.25);
+}
+
+.radar-ring--1 { width: 50px; height: 50px; }
+.radar-ring--2 { width: 90px; height: 90px; border-color: rgba(99, 102, 241, 0.2); }
+
+.radar-sweep {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(6, 182, 212, 0.25) 60deg, transparent 65deg);
+  animation: radar 3s linear infinite;
+}
+
+@keyframes radar {
+  100% { transform: rotate(360deg); }
+}
+
+.radar-center-icon {
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.6));
+}
+
+.idle-title {
+  margin: 0 0 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: 0.08em;
+}
+
+.idle-desc {
+  margin: 0 0 24px;
+  font-size: 12px;
+  color: #64748b;
+  max-width: 380px;
+  line-height: 1.6;
+}
+
+.idle-desc strong {
+  color: #38bdf8;
+}
+
+/* Pipeline Spec Box */
+.pipeline-spec {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.pipeline-spec__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #38bdf8;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.pipeline-spec__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pipeline-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.pipeline-step__num {
+  font-size: 10px;
+  color: #475569;
+  font-weight: 700;
+}
+
+.pipeline-step__highlight {
+  color: #34d399;
+  font-weight: 600;
 }
 </style>

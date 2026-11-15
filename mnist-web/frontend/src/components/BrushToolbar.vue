@@ -1,33 +1,37 @@
 <template>
   <div class="bar">
-    <button
-      class="chip"
-      :disabled="!canUndo"
-      title="Hoàn tác (Ctrl+Z)"
-      @click="undo"
-    >
-      <AppIcon name="undo" :size="16" />
-    </button>
-    <button
-      class="chip"
-      :disabled="!canRedo"
-      title="Làm lại (Ctrl+Y)"
-      @click="redo"
-    >
-      <AppIcon name="redo" :size="16" />
-    </button>
+    <div class="btn-group">
+      <button
+        class="chip"
+        :disabled="!canUndo"
+        title="Hoàn tác (Ctrl+Z)"
+        @click="undo"
+        type="button"
+      >
+        <AppIcon name="undo" :size="15" />
+      </button>
+      <button
+        class="chip"
+        :disabled="!canRedo"
+        title="Làm lại (Ctrl+Y)"
+        @click="redo"
+        type="button"
+      >
+        <AppIcon name="redo" :size="15" />
+      </button>
+    </div>
 
     <div class="bar__divider"></div>
 
     <label class="size">
       <span class="size__label">
-        <AppIcon name="pencil" :size="14" tone="purple" />
-        <span>Cỡ nét</span>
+        <AppIcon name="pencil" :size="13" tone="cyan" />
+        <span>Nét vẽ</span>
       </span>
       <input
         type="range"
         min="4"
-        max="40"
+        max="36"
         step="2"
         :value="brushSize"
         @input="onSizeChange"
@@ -38,8 +42,8 @@
 
     <div class="bar__divider"></div>
 
-    <button class="chip chip--text" @click="clear" type="button">
-      <AppIcon name="eraser" :size="14" />
+    <button class="chip chip--text" @click="clear" type="button" title="Xóa canvas">
+      <AppIcon name="eraser" :size="14" tone="soft" />
       <span>Xóa</span>
     </button>
   </div>
@@ -94,53 +98,60 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
   align-items: center;
   gap: 10px;
   margin-top: 14px;
-  padding: 10px 12px;
-  background: #ffffff;
-  border: 2px solid #fbcfe8;
-  border-radius: 16px;
+  padding: 8px 12px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  backdrop-filter: blur(12px);
   flex-wrap: wrap;
 }
 
+.btn-group {
+  display: flex;
+  gap: 4px;
+}
+
 .chip {
-  min-width: 38px;
-  height: 36px;
-  padding: 0 10px;
-  background: #fdf2f8;
-  border: 1.5px solid #fbcfe8;
-  border-radius: 10px;
-  color: #ec4899;
-  font-size: 14px;
-  font-weight: 700;
+  min-width: 34px;
+  height: 32px;
+  padding: 0 8px;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  transition: all 0.15s;
+  transition: all 0.15s ease;
 }
 
 .chip:hover:not(:disabled) {
-  background: #fce7f3;
-  border-color: #f9a8d4;
+  background: rgba(51, 65, 85, 0.8);
+  border-color: rgba(6, 182, 212, 0.4);
+  color: #38bdf8;
   transform: translateY(-1px);
 }
 
 .chip:disabled {
-  color: #d8b4d8;
-  border-color: #f3e8ff;
+  color: #475569;
+  border-color: transparent;
   cursor: not-allowed;
-  background: #faf5ff;
+  background: rgba(15, 23, 42, 0.4);
 }
 
 .chip--text {
   font-size: 12px;
-  padding: 0 12px;
+  padding: 0 10px;
 }
 
 .bar__divider {
   width: 1px;
-  height: 24px;
-  background: #fbcfe8;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .size {
@@ -148,7 +159,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
   align-items: center;
   gap: 8px;
   flex: 1;
-  min-width: 180px;
+  min-width: 170px;
 }
 
 .size__label {
@@ -156,17 +167,17 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: #8b7a9c;
-  font-weight: 600;
+  color: #94a3b8;
+  font-weight: 500;
 }
 
 .size__slider {
   flex: 1;
-  max-width: 120px;
+  max-width: 110px;
   height: 4px;
   -webkit-appearance: none;
   appearance: none;
-  background: #fbcfe8;
+  background: #1e293b;
   border-radius: 999px;
   outline: none;
   cursor: pointer;
@@ -175,29 +186,35 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 .size__slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #f9a8d4, #c4b5fd);
-  border: 2px solid #ffffff;
-  box-shadow: 0 0 0 1.5px #ec4899;
+  background: #06b6d4;
+  border: 2px solid #0f172a;
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.8);
   cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.size__slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
 }
 
 .size__slider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #f9a8d4, #c4b5fd);
-  border: 2px solid #ffffff;
+  background: #06b6d4;
+  border: 2px solid #0f172a;
   cursor: pointer;
 }
 
 .size__val {
-  font-size: 12px;
-  color: #ec4899;
-  font-weight: 700;
-  min-width: 40px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #38bdf8;
+  font-weight: 600;
+  min-width: 36px;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
@@ -207,7 +224,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
     gap: 6px;
   }
   .size {
-    min-width: 140px;
+    min-width: 130px;
   }
   .size__label span {
     display: none;

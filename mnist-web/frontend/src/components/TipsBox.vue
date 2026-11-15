@@ -1,16 +1,15 @@
 <template>
   <details class="tips">
     <summary class="tips__head">
-      <AppIcon name="info" :size="16" tone="purple" />
-      <span>Mẹo để mình đoán chuẩn hơn nè</span>
-      <AppIcon name="chevron" :size="14" class="tips__chev" />
+      <AppIcon name="terminal" :size="14" tone="cyan" />
+      <span>Khuyến nghị tối ưu nhận diện</span>
+      <AppIcon name="chevron" :size="13" class="tips__chev" />
     </summary>
     <ul class="tips__list">
-      <li>Viết rõ từng số, không để 2 số dính nhau.</li>
-      <li>Nét đậm, đơn giản, đừng thêm nét thừa.</li>
-      <li>Viết số đủ to, chiếm phần lớn khung vẽ.</li>
-      <li>Canh số nằm giữa, không sát mép trên/dưới.</li>
-      <li>Ảnh tải lên nên nền trắng, số màu đen nha.</li>
+      <li><strong>Vẽ tập trung:</strong> Căn giữa khung vẽ, kích thước nét từ 12px – 20px.</li>
+      <li><strong>Đa chữ số:</strong> Giữ khoảng cách giữa các số $\ge 25\text{px}$ để thuật toán Contour tách chính xác.</li>
+      <li><strong>Phong cách số:</strong> Viết số rõ ràng, tránh các nét móc thừa quá phức tạp.</li>
+      <li><strong>Tải ảnh / Webcam:</strong> Viết số bằng bút đậm trên giấy trắng, căn số lọt vào giữa khung ngắm hình vuông, giữ đủ ánh sáng và không bị rung tay.</li>
     </ul>
   </details>
 </template>
@@ -21,23 +20,29 @@ import AppIcon from './AppIcon.vue'
 
 <style scoped>
 .tips {
-  border: 2px solid #fbcfe8;
-  border-radius: 14px;
-  background: #fdf2f8;
-  margin-bottom: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  margin-top: 14px;
   overflow: hidden;
+  backdrop-filter: blur(10px);
 }
 
 .tips__head {
   padding: 10px 14px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  color: #6b5b7a;
+  color: #94a3b8;
   cursor: pointer;
   list-style: none;
   display: flex;
   align-items: center;
   gap: 8px;
+  transition: color 0.15s ease;
+}
+
+.tips__head:hover {
+  color: #f1f5f9;
 }
 
 .tips__head::-webkit-details-marker {
@@ -46,23 +51,32 @@ import AppIcon from './AppIcon.vue'
 
 .tips__chev {
   margin-left: auto;
-  color: #f9a8d4;
-  transition: transform 0.2s;
+  color: #64748b;
+  transition: transform 0.2s ease;
 }
 
 .tips[open] .tips__chev {
   transform: rotate(180deg);
+  color: #06b6d4;
 }
 
 .tips__list {
   margin: 0;
-  padding: 4px 18px 12px 32px;
-  color: #6b5b7a;
-  font-size: 13px;
-  line-height: 1.7;
+  padding: 4px 16px 12px 30px;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.tips__list strong {
+  color: #e2e8f0;
+}
+
+.tips__list li {
+  margin-bottom: 4px;
 }
 
 .tips__list li::marker {
-  color: #f9a8d4;
+  color: #06b6d4;
 }
 </style>

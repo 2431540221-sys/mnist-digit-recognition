@@ -2,22 +2,22 @@
   <div v-if="history.length" class="history">
     <div class="history__head">
       <span class="history__title">
-        <AppIcon name="history" :size="14" />
-        <span>Lịch sử ({{ history.length }})</span>
+        <AppIcon name="history" :size="14" tone="indigo" />
+        <span>NHẬT KÝ SUY LUẬN ({{ history.length }})</span>
       </span>
-      <button class="history__dl" @click="download" type="button">
-        <AppIcon name="download" :size="13" />
-        <span>Tải xuống</span>
+      <button class="history__dl" @click="download" type="button" title="Xuất dữ liệu JSON">
+        <AppIcon name="download" :size="12" />
+        <span>Xuất JSON</span>
       </button>
     </div>
     <ul class="history__list">
       <li v-for="(entry, i) in history" :key="i" class="history__item">
         <span class="history__time">{{ entry.time }}</span>
-        <span class="history__mode">
-          {{ entry.mode === 'single' ? '1 số' : 'Nhiều số' }}
+        <span class="history__mode" :class="`history__mode--${entry.mode}`">
+          {{ entry.mode === 'single' ? 'ĐƠN' : 'ĐA SỐ' }}
         </span>
         <span class="history__digits">
-          {{ entry.digits.join(', ') }}
+          {{ entry.digits.join('') }}
         </span>
       </li>
     </ul>
@@ -32,48 +32,54 @@ const { history, download } = useHistory()
 
 <style scoped>
 .history {
-  border: 2px solid #fbcfe8;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
-  background: #ffffff;
-  margin-top: 20px;
+  background: rgba(15, 23, 42, 0.75);
+  margin-top: 16px;
   overflow: hidden;
+  backdrop-filter: blur(12px);
 }
 
 .history__head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, #fdf2f8, #faf5ff);
-  border-bottom: 2px solid #fbcfe8;
+  padding: 10px 14px;
+  background: rgba(2, 6, 23, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .history__title {
-  font-size: 13px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
   font-weight: 700;
-  color: #a855f7;
+  color: #818cf8;
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  letter-spacing: 0.05em;
 }
 
 .history__dl {
-  background: #ffffff;
-  border: 1.5px solid #f9a8d4;
-  border-radius: 999px;
-  color: #ec4899;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 5px 12px;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #cbd5e1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 10px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
 .history__dl:hover {
-  background: #fdf2f8;
+  background: rgba(6, 182, 212, 0.15);
+  border-color: rgba(6, 182, 212, 0.4);
+  color: #38bdf8;
   transform: translateY(-1px);
 }
 
@@ -81,17 +87,27 @@ const { history, download } = useHistory()
   list-style: none;
   margin: 0;
   padding: 0;
-  max-height: 220px;
+  max-height: 200px;
   overflow-y: auto;
+}
+
+.history__list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.history__list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
 }
 
 .history__item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 16px;
-  font-size: 13px;
-  border-bottom: 1px solid #fdf2f8;
+  gap: 12px;
+  padding: 8px 14px;
+  font-size: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.15s;
 }
 
 .history__item:last-child {
@@ -99,28 +115,43 @@ const { history, download } = useHistory()
 }
 
 .history__item:hover {
-  background: #fdf2f8;
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .history__time {
-  color: #a78bfa;
+  font-family: 'JetBrains Mono', monospace;
+  color: #64748b;
   font-size: 11px;
-  min-width: 100px;
-  font-weight: 500;
+  min-width: 70px;
 }
 
 .history__mode {
-  background: linear-gradient(135deg, #fce7f3, #f3e8ff);
-  color: #a855f7;
-  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
   font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 999px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+
+.history__mode--single {
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.history__mode--multi {
+  background: rgba(6, 182, 212, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(6, 182, 212, 0.3);
 }
 
 .history__digits {
-  color: #ec4899;
+  font-family: 'JetBrains Mono', monospace;
+  color: #f1f5f9;
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  margin-left: auto;
 }
 </style>
