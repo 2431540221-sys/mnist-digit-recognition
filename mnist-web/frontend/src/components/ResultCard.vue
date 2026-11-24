@@ -113,12 +113,12 @@ const badgeIcon = computed(() => {
 
 <style scoped>
 .result {
-  background: rgba(15, 23, 42, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 18px;
   padding: 18px 20px;
   backdrop-filter: blur(14px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.10);
   margin-bottom: 14px;
   transition: all 0.2s ease;
 }
@@ -173,11 +173,10 @@ const badgeIcon = computed(() => {
   font-size: 52px;
   font-weight: 800;
   line-height: 1;
-  background: linear-gradient(135deg, #f8fafc 0%, #38bdf8 100%);
+  background: linear-gradient(135deg, #4f46e5 0%, #0891b2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
 }
 
 .badge {
@@ -196,24 +195,24 @@ const badgeIcon = computed(() => {
 .badge--high {
   background: rgba(16, 185, 129, 0.12);
   border: 1px solid rgba(16, 185, 129, 0.35);
-  color: #34d399;
+  color: #059669;
 }
 
 .badge--med {
   background: rgba(6, 182, 212, 0.12);
   border: 1px solid rgba(6, 182, 212, 0.35);
-  color: #38bdf8;
+  color: #0369a1;
 }
 
 .badge--low {
   background: rgba(245, 158, 11, 0.12);
   border: 1px solid rgba(245, 158, 11, 0.35);
-  color: #fbbf24;
+  color: #b45309;
 }
 
 /* Alternatives */
 .alt {
-  background: rgba(30, 41, 59, 0.5);
+  background: #f1f5f9;
   border: 1px solid rgba(245, 158, 11, 0.3);
   border-radius: 12px;
   padding: 10px 12px;
@@ -223,7 +222,7 @@ const badgeIcon = computed(() => {
 .alt__header {
   margin: 0 0 8px;
   font-size: 12px;
-  color: #fbbf24;
+  color: #b45309;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
@@ -241,25 +240,25 @@ const badgeIcon = computed(() => {
   flex-direction: column;
   align-items: center;
   padding: 6px 12px;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 8px;
   cursor: pointer;
   min-width: 50px;
   transition: all 0.15s ease;
-  color: #cbd5e1;
+  color: #334155;
 }
 
 .alt__btn:hover {
   border-color: rgba(6, 182, 212, 0.5);
-  background: rgba(30, 41, 59, 0.9);
+  background: #e2e8f0;
   transform: translateY(-1px);
 }
 
 .alt__btn.is-active {
   background: linear-gradient(135deg, rgba(79, 70, 229, 0.9) 0%, rgba(6, 182, 212, 0.9) 100%);
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: transparent;
   box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
 }
 
@@ -280,7 +279,7 @@ const badgeIcon = computed(() => {
 /* Probabilities section */
 .probs-section {
   padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .probs-section__title {
@@ -315,22 +314,21 @@ const badgeIcon = computed(() => {
 }
 
 .probs__label.is-active {
-  color: #38bdf8;
+  color: #0369a1;
   font-weight: 800;
-  text-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
 }
 
 .probs__track {
   flex: 1;
   height: 6px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(15, 23, 42, 0.04);
   border-radius: 999px;
   overflow: hidden;
 }
 
 .probs__fill {
   height: 100%;
-  background: #334155;
+  background: #cbd5e1;
   border-radius: 999px;
   transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -350,7 +348,7 @@ const badgeIcon = computed(() => {
 }
 
 .probs__val.is-active {
-  color: #38bdf8;
+  color: #0369a1;
   font-weight: 700;
 }
 

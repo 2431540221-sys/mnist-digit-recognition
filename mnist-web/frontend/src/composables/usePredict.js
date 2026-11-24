@@ -1,6 +1,8 @@
 // Composable: usePredict
 // Singleton state chia sẻ giữa các component (App.vue, ResultCard, v.v.)
-// - results, error, loading, combinedNumber: state phản hồi
+// - results, error, errorInfo, loading, combinedNumber: state phản hồi
+//   errorInfo = { stage, passedModel, confidence } cho biết lỗi xảy ra ở bước nào
+//   (input | preprocess | model | network | server) và ảnh đã đi qua mô hình CNN chưa
 // - predict(dataUrl, mode): gọi backend /predict
 // - reset(): xoá state khi đổi mode
 
@@ -9,11 +11,13 @@ import { API_URL } from '../config/api.js'
 
 const results = ref(null)
 const error = ref('')
+const errorInfo = ref(null)
 const loading = ref(false)
 const combinedNumber = ref('')
 
 async function predict(dataUrl, mode) {
   error.value = ''
+  errorInfo.value = null
   loading.value = true
   try {
     const res = await fetch(API_URL, {
@@ -22,8 +26,18 @@ async function predict(dataUrl, mode) {
       body: JSON.stringify({ image: dataUrl, mode }),
     })
     if (!res.ok) {
-      const errData = await res.json().catch(() => ({}))
-      throw new Error(errData.error || 'Lỗi từ server')
+      const errData = await res.json().catch(() => null)
+      if (errData && errData.error_stage) {
+        // Lỗi do backend báo: biết chính xác bước nào và đã qua mô hình chưa
+        errorInfo.value = {
+          stage: errData.error_stage,
+          passedModel: !!errData.passed_model,
+          confidence: typeof errData.confidence === 'number' ? errData.confidence : null,
+        }
+      } else {
+        errorInfo.value = { stage: 'server', passedModel: false, confidence: null }
+      }
+      throw new Error((errData && errData.error) || 'Lỗi từ server')
     }
     const data = await res.json()
     const arr = Array.isArray(data.results) ? data.results : []
@@ -37,9 +51,13 @@ async function predict(dataUrl, mode) {
     }
     return { results: arr, number: combinedNumber.value, mode }
   } catch (err) {
-    error.value = err.message.includes('fetch')
-      ? 'Không kết nối được backend. Kiểm tra đã chạy "python app.py" chưa.'
-      : err.message
+    if (err instanceof TypeError) {
+      // fetch() không tới được server (backend tắt / sai địa chỉ)
+      errorInfo.value = { stage: 'network', passedModel: false, confidence: null }
+      error.value = 'Không kết nối được backend. Kiểm tra đã chạy "python app.py" chưa.'
+    } else {
+      error.value = err.message
+    }
     throw err
   } finally {
     loading.value = false
@@ -49,6 +67,7 @@ async function predict(dataUrl, mode) {
 function reset() {
   results.value = null
   error.value = ''
+  errorInfo.value = null
   combinedNumber.value = ''
 }
 
@@ -66,5 +85,5 @@ function overrideDigit(index, digit) {
 }
 
 export function usePredict() {
-  return { results, error, loading, combinedNumber, predict, reset, overrideDigit }
+  return { results, error, errorInfo, loading, combinedNumber, predict, reset, overrideDigit }
 }

@@ -32,9 +32,9 @@ const { history, download } = useHistory()
 
 <style scoped>
 .history {
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 16px;
-  background: rgba(15, 23, 42, 0.75);
+  background: rgba(255, 255, 255, 0.92);
   margin-top: 16px;
   overflow: hidden;
   backdrop-filter: blur(12px);
@@ -45,15 +45,15 @@ const { history, download } = useHistory()
   justify-content: space-between;
   align-items: center;
   padding: 10px 14px;
-  background: rgba(2, 6, 23, 0.5);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(241, 245, 249, 0.9);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .history__title {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 700;
-  color: #818cf8;
+  color: #4f46e5;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -61,10 +61,10 @@ const { history, download } = useHistory()
 }
 
 .history__dl {
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #f1f5f9;
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 6px;
-  color: #cbd5e1;
+  color: #334155;
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 600;
@@ -79,7 +79,7 @@ const { history, download } = useHistory()
 .history__dl:hover {
   background: rgba(6, 182, 212, 0.15);
   border-color: rgba(6, 182, 212, 0.4);
-  color: #38bdf8;
+  color: #0369a1;
   transform: translateY(-1px);
 }
 
@@ -96,7 +96,7 @@ const { history, download } = useHistory()
 }
 
 .history__list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.04);
   border-radius: 999px;
 }
 
@@ -106,7 +106,7 @@ const { history, download } = useHistory()
   gap: 12px;
   padding: 8px 14px;
   font-size: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
   transition: background 0.15s;
 }
 
@@ -115,7 +115,7 @@ const { history, download } = useHistory()
 }
 
 .history__item:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(15, 23, 42, 0.04);
 }
 
 .history__time {
@@ -136,19 +136,19 @@ const { history, download } = useHistory()
 
 .history__mode--single {
   background: rgba(99, 102, 241, 0.15);
-  color: #818cf8;
+  color: #4f46e5;
   border: 1px solid rgba(99, 102, 241, 0.3);
 }
 
 .history__mode--multi {
   background: rgba(6, 182, 212, 0.15);
-  color: #38bdf8;
+  color: #0369a1;
   border: 1px solid rgba(6, 182, 212, 0.3);
 }
 
 .history__digits {
   font-family: 'JetBrains Mono', monospace;
-  color: #f1f5f9;
+  color: #0f172a;
   font-weight: 700;
   font-size: 14px;
   letter-spacing: 0.05em;

@@ -5,6 +5,8 @@ Project gồm 3 phần:
 - **`mnist-web/backend/`** — API Python (Flask) load model đã train, xử lý ảnh bằng OpenCV, trả kết quả dự đoán
 - **`mnist-web/frontend/`** — giao diện web (Vue.js) cho người dùng vẽ chữ số và xem kết quả
 
+- **`docs/MO_HINH_VA_DU_LIEU.md`** — trả lời chi tiết về dữ liệu, chia train/validation, kiến trúc CNN và cách báo lỗi (web cũng hiển thị các thông tin này ở cuối trang)
+
 ---
 
 ## Yêu cầu trước khi bắt đầu

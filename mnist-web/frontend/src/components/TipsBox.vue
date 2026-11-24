@@ -20,9 +20,9 @@ import AppIcon from './AppIcon.vue'
 
 <style scoped>
 .tips {
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 12px;
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(255, 255, 255, 0.92);
   margin-top: 14px;
   overflow: hidden;
   backdrop-filter: blur(10px);
@@ -42,7 +42,7 @@ import AppIcon from './AppIcon.vue'
 }
 
 .tips__head:hover {
-  color: #f1f5f9;
+  color: #0f172a;
 }
 
 .tips__head::-webkit-details-marker {
@@ -69,7 +69,7 @@ import AppIcon from './AppIcon.vue'
 }
 
 .tips__list strong {
-  color: #e2e8f0;
+  color: #0f172a;
 }
 
 .tips__list li {

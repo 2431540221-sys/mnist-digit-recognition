@@ -85,19 +85,19 @@ function readFile(file) {
   height: 280px;
   border: 1px dashed rgba(6, 182, 212, 0.4);
   border-radius: 16px;
-  background: rgba(2, 6, 23, 0.7);
+  background: rgba(241, 245, 249, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.25s ease;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 0 20px rgba(15, 23, 42, 0.10);
 }
 
 .drop:hover {
   border-color: #06b6d4;
   background: rgba(6, 182, 212, 0.05);
-  box-shadow: 0 0 20px rgba(6, 182, 212, 0.15), inset 0 0 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.15), inset 0 0 20px rgba(15, 23, 42, 0.10);
 }
 
 .drop.is-drag {
@@ -140,7 +140,7 @@ function readFile(file) {
   margin: 0 0 6px;
   font-size: 14px;
   font-weight: 600;
-  color: #f1f5f9;
+  color: #0f172a;
 }
 
 .drop__sub {
@@ -158,7 +158,7 @@ function readFile(file) {
 }
 
 .link {
-  color: #38bdf8;
+  color: #0369a1;
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -168,7 +168,7 @@ function readFile(file) {
   position: relative;
   width: 100%;
   height: 100%;
-  background: #020617;
+  background: #f8fafc;
   border-radius: 14px;
   overflow: hidden;
 }
@@ -184,9 +184,9 @@ function readFile(file) {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  color: #0f172a;
   border-radius: 8px;
   padding: 6px 10px;
   font-size: 11px;
@@ -200,9 +200,9 @@ function readFile(file) {
 }
 
 .drop__swap:hover {
-  background: rgba(30, 41, 59, 0.95);
+  background: #e2e8f0;
   border-color: #06b6d4;
-  color: #38bdf8;
+  color: #0369a1;
   transform: translateY(-1px);
 }
 </style>

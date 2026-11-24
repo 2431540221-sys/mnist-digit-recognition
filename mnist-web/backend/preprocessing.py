@@ -59,6 +59,12 @@ def _pil_to_cv2_gray(img: Image.Image) -> tuple[np.ndarray, bool]:
     return gray, is_resized
 
 
+def _is_canvas(gray: np.ndarray) -> bool:
+    """Canvas vẽ tay: nền đen chiếm phần lớn ảnh. Dùng median vì số vẽ to/nét dày
+    làm mean tăng cao (>35) dù đó vẫn là canvas, dẫn tới nhận nhầm là ảnh camera."""
+    return float(np.median(gray)) < 35 or float(np.mean(gray)) < 35
+
+
 def _binarize(img: Image.Image, dilate_iter: int = DILATE_ITER_SINGLE) -> tuple[np.ndarray, np.ndarray]:
     """
     Bước 1-4 của pipeline: grayscale -> phát hiện nguồn ảnh (canvas vs ảnh giấy/camera)
@@ -74,7 +80,7 @@ def _binarize(img: Image.Image, dilate_iter: int = DILATE_ITER_SINGLE) -> tuple[
     mean_val = np.mean(gray)
     median_val = np.median(gray)
 
-    if mean_val < 35:
+    if _is_canvas(gray):
         # Canvas đen vẽ nét trắng: Gaussian Blur + Otsu Thresholding chuẩn
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
         _, binary = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
@@ -101,6 +107,101 @@ def _binarize(img: Image.Image, dilate_iter: int = DILATE_ITER_SINGLE) -> tuple[
     return binary, gray
 
 
+# Độ dày nét mục tiêu (px, trong ảnh 28x28). Nét MNIST dày khoảng 2-2.5px
+# (mean pixel của MNIST ~0.13). Nét vẽ bằng chuột/ảnh chụp thường dày gấp ~2 lần.
+TARGET_STROKE_PX = 2.2
+
+
+def _estimate_stroke_width(binary: np.ndarray) -> float:
+    """Ước lượng độ dày nét trung bình: width ~ 2 * diện tích / chu vi."""
+    area = float(cv2.countNonZero(binary))
+    if area == 0:
+        return 0.0
+    contours, _ = cv2.findContours(binary, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
+    perimeter = sum(cv2.arcLength(c, True) for c in contours)
+    if perimeter <= 0:
+        return 0.0
+    return 2.0 * area / perimeter
+
+
+def _count_holes(binary: np.ndarray) -> int:
+    """Số lỗ rỗng bên trong nét (vòng của 0, 6, 8, 9, 4...)."""
+    contours, hierarchy = cv2.findContours(binary, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+    if hierarchy is None:
+        return 0
+    return sum(1 for hi in hierarchy[0] if hi[3] != -1)
+
+
+def _holes_after_downscale(binary: np.ndarray) -> int:
+    """Đếm lỗ còn lại sau khi thu nhỏ về hộp 20x20 (đúng như lúc đưa vào model)."""
+    h, w = binary.shape
+    scale = 20.0 / max(h, w)
+    small = cv2.resize(binary, (max(1, int(round(w * scale))), max(1, int(round(h * scale)))),
+                       interpolation=cv2.INTER_AREA)
+    m = float(small.max())
+    if m <= 0:
+        return 0
+    padded = cv2.copyMakeBorder(small, 1, 1, 1, 1, cv2.BORDER_CONSTANT, value=0)
+    return _count_holes(((padded > 0.5 * m).astype(np.uint8)) * 255)
+
+
+def _stroke_width_basic(digit_crop: np.ndarray) -> np.ndarray:
+    """
+    Đưa độ dày nét về gần MNIST (~2.2px ở ảnh 28x28) TRƯỚC khi thu nhỏ về 20x20.
+    - Nét quá dày (số nhỏ + brush to): làm mỏng (erode) để không bít khe hở 3, 5, 6, 8, 9.
+    - Nét quá mảnh (số vẽ to + brush nhỏ): làm dày (dilate) vì sau khi thu nhỏ
+      nét sẽ mờ nhạt, khác xa ảnh MNIST có nét sáng, đậm.
+    """
+    h, w = digit_crop.shape
+    scale = 20.0 / max(h, w)
+    width_now = _estimate_stroke_width(digit_crop)
+    if width_now <= 0:
+        return digit_crop
+
+    width_target_src = TARGET_STROKE_PX / scale   # độ dày mong muốn ở ảnh gốc
+    radius = (width_now - width_target_src) / 2.0
+    if abs(radius) < 1.0:
+        return digit_crop                         # đã gần chuẩn, giữ nguyên
+
+    if radius > 0:
+        r = int(min(round(radius), max(1, int(width_now * 0.35))))
+        k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * r + 1, 2 * r + 1))
+        eroded = cv2.erode(digit_crop, k)
+        # Nếu erode làm mất quá nhiều nét thì bỏ qua, giữ ảnh gốc
+        if cv2.countNonZero(eroded) < 0.25 * cv2.countNonZero(digit_crop):
+            return digit_crop
+        return eroded
+
+    r = int(min(round(-radius), 10))
+    k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * r + 1, 2 * r + 1))
+    return cv2.dilate(digit_crop, k)
+
+
+def _normalize_stroke_width(digit_crop: np.ndarray) -> np.ndarray:
+    """
+    Chuẩn hóa độ dày nét nhưng KHÔNG để mất các lỗ của chữ số. Số có vòng hẹp
+    (vd: số 8 hai vòng nhỏ) bị bít kín khi thu nhỏ nên giống 6/9/1. Nếu mất lỗ,
+    làm mỏng nét thêm (erode) từ ảnh gốc đến khi các lỗ còn nhìn thấy được.
+    """
+    candidate = _stroke_width_basic(digit_crop)
+    need = min(_count_holes(digit_crop), 2)
+    if need == 0 or _holes_after_downscale(candidate) >= need:
+        return candidate
+
+    width_now = _estimate_stroke_width(digit_crop)
+    scale = 20.0 / max(digit_crop.shape)
+    min_width_src = 1.3 / scale          # nét sau khi thu nhỏ không được mảnh hơn ~1.3px
+    max_r = int((width_now - min_width_src) / 2.0)
+    for r in range(1, max_r + 1):
+        k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * r + 1, 2 * r + 1))
+        eroded = cv2.erode(digit_crop, k)
+        if cv2.countNonZero(eroded) < 0.15 * cv2.countNonZero(digit_crop):
+            break
+        if _holes_after_downscale(eroded) >= need:
+            return eroded
+    return candidate
+
+
 def _center_digit(digit_crop: np.ndarray) -> np.ndarray:
     """
     Resize giữ tỉ lệ khung hình vào hộp tối đa 20x20 và căn giữa theo
@@ -109,6 +210,14 @@ def _center_digit(digit_crop: np.ndarray) -> np.ndarray:
     h, w = digit_crop.shape
     if h == 0 or w == 0:
         return np.zeros((28, 28, 1), dtype='float32')
+
+    digit_crop = _normalize_stroke_width(digit_crop)
+    # Erode có thể làm bbox nhỏ lại: cắt sát lại để tỉ lệ khung hình chuẩn
+    pts = cv2.findNonZero(digit_crop)
+    if pts is not None:
+        bx, by, bw, bh = cv2.boundingRect(pts)
+        digit_crop = digit_crop[by:by + bh, bx:bx + bw]
+        h, w = digit_crop.shape
 
     if h > w:
         new_h, new_w = 20, max(1, int(w * 20 / h))
@@ -133,7 +242,8 @@ def _center_digit(digit_crop: np.ndarray) -> np.ndarray:
         M_shift = np.float32([[1, 0, shift_x], [0, 1, shift_y]])
         canvas = cv2.warpAffine(canvas, M_shift, (28, 28), borderMode=cv2.BORDER_CONSTANT, borderValue=0)
 
-    normalized = canvas / 255.0
+    peak = float(canvas.max())
+    normalized = canvas / peak if peak > 0 else canvas / 255.0   # nét sáng tối đa = 1 như MNIST
     return normalized.reshape(28, 28, 1).astype('float32')
 
 
@@ -170,6 +280,9 @@ def _merge_close_boxes(boxes, merge_gap: int = MERGE_GAP_SINGLE):
     boxes = sorted(boxes, key=lambda b: b[0])
     merged_h = [list(boxes[0])]  # [x, y, w, h] có thể sửa được
 
+    # Chiều cao lớn nhất: dùng để phân biệt "mảnh vỡ" (nhỏ) và "chữ số thật" (cao)
+    ref_h = max(b[3] for b in boxes)
+
     # --- PASS 1: GỘP NGANG ---
     for x, y, w, h in boxes[1:]:
         last = merged_h[-1]
@@ -179,7 +292,17 @@ def _merge_close_boxes(boxes, merge_gap: int = MERGE_GAP_SINGLE):
         min_h = min(last[3], h)
         overlap_y_ratio = y_overlap / min_h if min_h > 0 else 0
 
-        if gap < merge_gap and overlap_y_ratio > 0.3:
+        # Hai vùng đều cao gần bằng nhau => mỗi vùng là 1 chữ số riêng (vd "1" và "2"
+        # viết sát nhau), KHÔNG gộp chỉ vì gần. Chỉ gộp khi chúng chồng lấn cột đáng kể
+        # (các nét của cùng 1 số, vd số 4 vẽ bằng 2 nét giao nhau).
+        both_tall = last[3] >= 0.55 * ref_h and h >= 0.55 * ref_h
+        if both_tall:
+            x_overlap = min(last_right, x + w) - max(last[0], x)
+            should_merge = x_overlap > 0.3 * min(last[2], w)
+        else:
+            should_merge = gap < merge_gap and overlap_y_ratio > 0.3
+
+        if should_merge:
             # Gộp ngang: mở rộng box cuối cùng để bao trùm cả box hiện tại
             new_x0 = min(last[0], x)
             new_y0 = min(last[1], y)
@@ -350,7 +473,7 @@ def validate_digit_morphology(digit_crop: np.ndarray) -> tuple:
     Trả về (is_valid: bool, reason: str).
     """
     h, w = digit_crop.shape
-    if h < 10 or w < 4:
+    if h < 10 or w < 4 or max(h, w) < 20:
         return False, "Nét vẽ quá nhỏ hoặc chỉ là chấm li ti."
 
     total_pixels = h * w
@@ -363,7 +486,10 @@ def validate_digit_morphology(digit_crop: np.ndarray) -> tuple:
         return False, "Nét vẽ quá đặc hoặc bị bôi đen kịt, không giống chữ số."
     if density < 0.04:
         return False, "Nét vẽ quá mờ nhạt hoặc không đủ rõ nét."
-    if white_pixels > 8500:
+    # Bôi kín: nét quá dày so với kích thước chữ (không dùng số pixel tuyệt đối,
+    # vì số vẽ to với nét 15px vẫn hợp lệ nhưng có hàng nghìn pixel trắng).
+    stroke_ratio = _estimate_stroke_width(digit_crop) / float(max(h, w))
+    if stroke_ratio > 0.40:
         return False, "Nét vẽ quá lớn hoặc bị bôi kín màn hình, không phải chữ số."
 
     aspect = w / float(h)
@@ -406,8 +532,7 @@ def preprocess_image(img: Image.Image):
 
     # Kiểm tra kích thước: nếu bounding box chiếm gần trọn toàn bộ ảnh camera/upload (> 85%)
     # và bên trong có nhiều hơn 2 contour con -> ảnh chân dung/vật thể
-    mean_val = np.mean(gray)
-    if mean_val >= 35:  # Không phải canvas vẽ tay
+    if not _is_canvas(gray):  # Không phải canvas vẽ tay
         if (w > 0.85 * img_w) and (h > 0.85 * img_h):
             return None, "Vùng nét vẽ chiếm toàn bộ khung hình, không phải một chữ số đơn lẻ."
 

@@ -96,7 +96,7 @@ const icon = computed(() => map[props.name] || Sparkles)
 
 .icon--default { color: currentColor; }
 .icon--cyan { color: #06b6d4; }
-.icon--indigo { color: #818cf8; }
+.icon--indigo { color: #6366f1; }
 .icon--emerald { color: #10b981; }
 .icon--amber { color: #f59e0b; }
 .icon--pink { color: #ec4899; }

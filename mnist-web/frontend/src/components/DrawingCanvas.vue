@@ -31,12 +31,12 @@ onMounted(() => {
   position: relative;
   display: inline-block;
   border-radius: 16px;
-  background: #020617;
+  background: #f8fafc;
   padding: 8px;
   border: 1px solid rgba(99, 102, 241, 0.35);
   box-shadow:
     0 0 25px rgba(99, 102, 241, 0.15),
-    inset 0 0 15px rgba(0, 0, 0, 0.9);
+    inset 0 0 15px rgba(15, 23, 42, 0.10);
   transition: all 0.3s ease;
 }
 
@@ -44,7 +44,7 @@ onMounted(() => {
   border-color: rgba(6, 182, 212, 0.6);
   box-shadow:
     0 0 35px rgba(6, 182, 212, 0.25),
-    inset 0 0 15px rgba(0, 0, 0, 0.9);
+    inset 0 0 15px rgba(15, 23, 42, 0.10);
 }
 
 /* Futuristic corner accents */
@@ -85,6 +85,6 @@ canvas {
   touch-action: none;
   border-radius: 10px;
   background: #000000;
-  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 0 0 8px rgba(15, 23, 42, 0.10);
 }
 </style>

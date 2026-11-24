@@ -82,16 +82,16 @@ async function onPredict() {
 }
 
 .btn--ghost {
-  background: rgba(15, 23, 42, 0.7);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(15, 23, 42, 0.08);
   color: #94a3b8;
   backdrop-filter: blur(10px);
 }
 
 .btn--ghost:hover {
-  background: rgba(30, 41, 59, 0.8);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: #f1f5f9;
+  background: #e2e8f0;
+  border-color: rgba(15, 23, 42, 0.16);
+  color: #0f172a;
   transform: translateY(-1px);
 }
 
@@ -99,7 +99,7 @@ async function onPredict() {
   background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
   color: #ffffff;
   flex: 2;
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: transparent;
   box-shadow: 0 4px 18px rgba(79, 70, 229, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
@@ -109,7 +109,7 @@ async function onPredict() {
 }
 
 .btn--primary:disabled {
-  background: #1e293b;
+  background: #e2e8f0;
   color: #64748b;
   border-color: transparent;
   cursor: not-allowed;
@@ -120,7 +120,7 @@ async function onPredict() {
 .spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(15, 23, 42, 0.16);
   border-top-color: #ffffff;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;

@@ -16,6 +16,7 @@ except Exception:
     pass
 
 from preprocessing import preprocess_image, segment_digits, segment_multi_digits
+from model_info import build_model_info
 
 app = Flask(__name__)
 
@@ -71,31 +72,59 @@ def decode_base64_image(image_data):
     return Image.open(io.BytesIO(img_bytes))
 
 
+# Các bước xử lý của 1 request, dùng để báo lỗi xảy ra ở đâu:
+#   input      -> dữ liệu gửi lên thiếu/hỏng, CHƯA tới tiền xử lý, CHƯA qua mô hình
+#   preprocess -> lỗi lúc tách/chuẩn hóa chữ số,                   CHƯA qua mô hình
+#   model      -> ảnh đã qua mô hình CNN nhưng kết quả không đủ tin cậy
+ERROR_STAGES = ('input', 'preprocess', 'model')
+
+
+def _error(message: str, stage: str, **extra):
+    """Trả lỗi 400 kèm bước gây lỗi và cờ passed_model (đã đi qua mô hình CNN hay chưa)."""
+    assert stage in ERROR_STAGES
+    body = {'error': message, 'error_stage': stage, 'passed_model': stage == 'model'}
+    body.update(extra)
+    return jsonify(body), 400
+
+
+def _read_image_from_request():
+    """Đọc + giải mã ảnh từ request. Trả về (img, mode, error_response)."""
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return None, None, _error('Dữ liệu gửi lên không phải JSON hợp lệ.', 'input')
+    image_data = data.get('image')
+    if not image_data or not isinstance(image_data, str):
+        return None, None, _error('Thiếu dữ liệu ảnh.', 'input')
+    try:
+        img = decode_base64_image(image_data)
+        img.load()
+    except Exception:
+        return None, None, _error('Không đọc được ảnh gửi lên (sai định dạng base64/ảnh).', 'input')
+    return img, data.get('mode', 'single'), None
+
+
 @app.route('/predict', methods=['POST'])
 def predict():
     """Endpoint chính xử lý yêu cầu từ Web Frontend (hỗ trợ cả mode='single' và mode='multi')."""
-    data = request.get_json()
-    image_data = data.get('image')
-    mode = data.get('mode', 'single')
-
-    if not image_data:
-        return jsonify({'error': 'Thiếu dữ liệu ảnh'}), 400
-
-    img = decode_base64_image(image_data)
+    img, mode, err = _read_image_from_request()
+    if err:
+        return err
 
     if mode == 'single':
         processed, err_msg = preprocess_image(img)
         if processed is None:
-            return jsonify({'error': err_msg or 'Không tìm thấy nét vẽ nào'}), 400
+            return _error(err_msg or 'Không tìm thấy nét vẽ nào', 'preprocess')
 
-        prediction = model.predict(processed)
+        prediction = model.predict(processed, verbose=0)
         result = _build_result(prediction[0])
 
         # Ngưỡng tin cậy tối thiểu: nếu < 60%, khả năng cao là hình vẽ bậy/không phải số
         if result['confidence'] < 0.60:
-            return jsonify({
-                'error': f"Độ tin cậy quá thấp ({result['confidence']*100:.1f}%). Hình ảnh không giống chữ số từ 0 đến 9, vui lòng vẽ hoặc chụp rõ ràng hơn."
-            }), 400
+            return _error(
+                f"Độ tin cậy quá thấp ({result['confidence']*100:.1f}%). Hình ảnh không giống chữ số từ 0 đến 9, vui lòng vẽ hoặc chụp rõ ràng hơn.",
+                'model',
+                confidence=result['confidence'],
+            )
 
         return jsonify({
             'digit': result['digit'],
@@ -110,10 +139,10 @@ def predict():
         # + projection profile tách tiếp box dính nhau + lọc ảnh chân dung/ngoại cảnh)
         digit_arrays, err_msg = segment_multi_digits(img)
         if err_msg or len(digit_arrays) == 0:
-            return jsonify({'error': err_msg or 'Không tìm thấy chữ số hợp lệ nào. Vui lòng kiểm tra lại hình ảnh.'}), 400
+            return _error(err_msg or 'Không tìm thấy chữ số hợp lệ nào. Vui lòng kiểm tra lại hình ảnh.', 'preprocess')
 
         batch = np.stack(digit_arrays, axis=0)  # (n, 28, 28, 1)
-        predictions = model.predict(batch)
+        predictions = model.predict(batch, verbose=0)
 
         results = [_build_result(pred) for pred in predictions]
 
@@ -123,9 +152,11 @@ def predict():
         low_conf_count = sum(1 for c in confidences if c < 0.55)
 
         if mean_conf < 0.65 or (low_conf_count / len(confidences)) >= 0.35:
-            return jsonify({
-                'error': 'Hệ thống không thể nhận diện rõ ràng các chữ số trong ảnh (độ tin cậy quá thấp). Vui lòng đảm bảo ảnh chụp dãy chữ số viết tay rõ ràng trên nền sạch.'
-            }), 400
+            return _error(
+                'Hệ thống không thể nhận diện rõ ràng các chữ số trong ảnh (độ tin cậy quá thấp). Vui lòng đảm bảo ảnh chụp dãy chữ số viết tay rõ ràng trên nền sạch.',
+                'model',
+                confidence=mean_conf,
+            )
 
         number_string = ''.join(str(r['digit']) for r in results)
         return jsonify({
@@ -138,19 +169,16 @@ def predict():
 @app.route('/predict-multi', methods=['POST'])
 def predict_multi():
     """Dự đoán nhiều chữ số viết cạnh nhau, ghép thành 1 số hoàn chỉnh."""
-    data = request.get_json()
-    image_data = data.get('image')
-    if not image_data:
-        return jsonify({'error': 'Thiếu dữ liệu ảnh'}), 400
-
-    img = decode_base64_image(image_data)
+    img, _mode, err = _read_image_from_request()
+    if err:
+        return err
     digit_arrays, err_msg = segment_multi_digits(img)
 
     if err_msg or len(digit_arrays) == 0:
-        return jsonify({'error': err_msg or 'Không tìm thấy chữ số nào'}), 400
+        return _error(err_msg or 'Không tìm thấy chữ số nào', 'preprocess')
 
     batch = np.stack(digit_arrays, axis=0)  # (n, 28, 28, 1)
-    predictions = model.predict(batch)
+    predictions = model.predict(batch, verbose=0)
 
     results = [_build_result(pred) for pred in predictions]
     number_string = ''.join(str(r['digit']) for r in results)
@@ -162,15 +190,24 @@ def health():
     return jsonify({'status': 'ok'})
 
 
+_MODEL_INFO_CACHE = None
+
+
+@app.route('/model-info', methods=['GET'])
+def model_info():
+    """Thông tin bộ dữ liệu + kiến trúc CNN (đọc từ model đang chạy) để hiển thị trên web."""
+    global _MODEL_INFO_CACHE
+    if _MODEL_INFO_CACHE is None:
+        _MODEL_INFO_CACHE = build_model_info(model)
+    return jsonify(_MODEL_INFO_CACHE)
+
+
 @app.route('/debug-segments', methods=['POST'])
 def debug_segments():
     """Trả về số lượng chữ số tách được để debug."""
-    data = request.get_json()
-    image_data = data.get('image')
-    if not image_data:
-        return jsonify({'error': 'Thiếu dữ liệu ảnh'}), 400
-
-    img = decode_base64_image(image_data)
+    img, _mode, err = _read_image_from_request()
+    if err:
+        return err
     digit_arrays_single, _ = segment_digits(img, merge_gap=10, dilate_iter=3)
     digit_arrays_multi, _  = segment_multi_digits(img)
 

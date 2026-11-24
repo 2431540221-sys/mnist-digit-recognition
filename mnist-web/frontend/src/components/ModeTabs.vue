@@ -29,8 +29,8 @@ const { currentMode, setMode } = useAppState()
 <style scoped>
 .tabs {
   display: flex;
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 14px;
   padding: 4px;
   margin-bottom: 18px;
@@ -56,27 +56,27 @@ const { currentMode, setMode } = useAppState()
 }
 
 .tab__badge {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.04);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 6px;
   padding: 2px 7px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
-  color: #cbd5e1;
+  color: #334155;
   letter-spacing: 0.04em;
   transition: all 0.2s;
 }
 
 .tab:hover:not(.is-active) {
-  background: rgba(255, 255, 255, 0.04);
-  color: #e2e8f0;
+  background: rgba(15, 23, 42, 0.04);
+  color: #0f172a;
 }
 
 .tab.is-active {
   background: linear-gradient(135deg, rgba(79, 70, 229, 0.9) 0%, rgba(6, 182, 212, 0.85) 100%);
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: transparent;
   box-shadow: 0 4px 16px rgba(79, 70, 229, 0.35);
 }
 

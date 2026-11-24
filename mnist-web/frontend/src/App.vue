@@ -28,7 +28,7 @@
           </div>
           <div class="telemetry__item telemetry__item--hide-mobile">
             <span class="telemetry__label">MODEL:</span>
-            <span class="telemetry__val">CNN-4BLOCK</span>
+            <span class="telemetry__val">CNN 4 Conv2D</span>
           </div>
           <div class="telemetry__item telemetry__item--hide-mobile">
             <span class="telemetry__label">ACCURACY:</span>
@@ -90,8 +90,6 @@
 
           <ActionButtons />
 
-          <ErrorBanner />
-
           <TipsBox />
         </section>
 
@@ -105,8 +103,11 @@
             <span class="card__badge">INFERENCE ENGINE</span>
           </div>
 
+          <!-- Khi có lỗi: hiện ngay tại khung chờ tín hiệu đầu vào -->
+          <ErrorBanner v-if="error" />
+
           <!-- Khi đã có kết quả dự đoán -->
-          <div v-if="results && results.length" class="results-stream">
+          <div v-else-if="results && results.length" class="results-stream">
             <CombinedResult />
             <ResultCard
               v-for="(result, index) in results"
@@ -162,6 +163,9 @@
           <HistoryList />
         </section>
       </main>
+
+      <!-- Thông tin dữ liệu & kiến trúc CNN (lấy từ backend) -->
+      <ModelInfoPanel />
     </div>
   </div>
 </template>
@@ -180,12 +184,13 @@ import ResultCard from './components/ResultCard.vue'
 import CombinedResult from './components/CombinedResult.vue'
 import ErrorBanner from './components/ErrorBanner.vue'
 import HistoryList from './components/HistoryList.vue'
+import ModelInfoPanel from './components/ModelInfoPanel.vue'
 
 import { useAppState } from './composables/useAppState.js'
 import { usePredict } from './composables/usePredict.js'
 
 const { currentMode, setUploadedImage } = useAppState()
-const { results, overrideDigit } = usePredict()
+const { results, error, overrideDigit } = usePredict()
 
 const inputTab = ref('draw')
 
@@ -228,8 +233,8 @@ body {
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  color: #94a3b8;
-  background: #020617;
+  color: #334155;
+  background: #f4f7fb;
   overflow-x: hidden;
 }
 
@@ -245,7 +250,7 @@ button {
   padding: 24px 16px 40px;
   display: flex;
   justify-content: center;
-  background-color: #020617;
+  background-color: #f4f7fb;
 }
 
 /* Ambient glow & grid */
@@ -261,7 +266,7 @@ button {
   position: absolute;
   border-radius: 50%;
   filter: blur(120px);
-  opacity: 0.28;
+  opacity: 0.14;
 }
 
 .glow-orb--1 {
@@ -284,8 +289,8 @@ button {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    linear-gradient(to right, rgba(15, 23, 42, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
@@ -302,13 +307,13 @@ button {
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 18px;
   backdrop-filter: blur(16px);
   margin-bottom: 20px;
   gap: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.10);
 }
 
 .brand {
@@ -334,7 +339,7 @@ button {
   font-family: 'JetBrains Mono', monospace;
   font-size: 16px;
   font-weight: 800;
-  color: #f8fafc;
+  color: #0f172a;
   letter-spacing: 0.06em;
 }
 
@@ -355,8 +360,8 @@ button {
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  background: rgba(2, 6, 23, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(241, 245, 249, 0.9);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 8px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
@@ -382,16 +387,16 @@ button {
 }
 
 .telemetry__val {
-  color: #cbd5e1;
+  color: #334155;
   font-weight: 700;
 }
 
 .telemetry__val--green {
-  color: #34d399;
+  color: #059669;
 }
 
 .telemetry__val--cyan {
-  color: #38bdf8;
+  color: #0369a1;
 }
 
 /* Dashboard 2-column layout */
@@ -413,12 +418,12 @@ button {
 
 /* Cards */
 .card {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 22px;
   padding: 22px;
   backdrop-filter: blur(16px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.10);
 }
 
 .card__head {
@@ -427,7 +432,7 @@ button {
   justify-content: space-between;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .card__head-title {
@@ -437,7 +442,7 @@ button {
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #0f172a;
   letter-spacing: 0.06em;
 }
 
@@ -449,15 +454,15 @@ button {
   border-radius: 6px;
   background: rgba(99, 102, 241, 0.15);
   border: 1px solid rgba(99, 102, 241, 0.3);
-  color: #818cf8;
+  color: #4f46e5;
   letter-spacing: 0.06em;
 }
 
 /* Segmented tab */
 .seg {
   display: flex;
-  background: rgba(2, 6, 23, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(241, 245, 249, 0.9);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 12px;
   padding: 4px;
   margin-bottom: 16px;
@@ -482,15 +487,15 @@ button {
 }
 
 .seg__btn:hover:not(.is-active) {
-  color: #cbd5e1;
-  background: rgba(255, 255, 255, 0.03);
+  color: #334155;
+  background: rgba(15, 23, 42, 0.04);
 }
 
 .seg__btn.is-active {
-  background: rgba(30, 41, 59, 0.85);
-  color: #38bdf8;
-  border: 1px solid rgba(6, 182, 212, 0.25);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  background: #ffffff;
+  color: #0369a1;
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.10);
 }
 
 .stage {
@@ -507,9 +512,9 @@ button {
   align-items: center;
   text-align: center;
   padding: 36px 20px 24px;
-  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border: 1px dashed rgba(15, 23, 42, 0.08);
   border-radius: 18px;
-  background: rgba(2, 6, 23, 0.4);
+  background: rgba(241, 245, 249, 0.9);
 }
 
 .radar-box {
@@ -555,7 +560,7 @@ button {
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #0f172a;
   letter-spacing: 0.08em;
 }
 
@@ -568,14 +573,14 @@ button {
 }
 
 .idle-desc strong {
-  color: #38bdf8;
+  color: #0369a1;
 }
 
 /* Pipeline Spec Box */
 .pipeline-spec {
   width: 100%;
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 12px;
   padding: 12px 16px;
   text-align: left;
@@ -588,11 +593,11 @@ button {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
-  color: #38bdf8;
+  color: #0369a1;
   letter-spacing: 0.06em;
   margin-bottom: 10px;
   padding-bottom: 6px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .pipeline-spec__steps {
@@ -612,12 +617,12 @@ button {
 
 .pipeline-step__num {
   font-size: 10px;
-  color: #475569;
+  color: #94a3b8;
   font-weight: 700;
 }
 
 .pipeline-step__highlight {
-  color: #34d399;
+  color: #059669;
   font-weight: 600;
 }
 </style>

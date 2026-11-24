@@ -24,7 +24,7 @@ const number = computed(() => combinedNumber.value)
   align-items: center;
   gap: 8px;
   padding: 18px 20px;
-  background: rgba(15, 23, 42, 0.85);
+  background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(6, 182, 212, 0.35);
   border-radius: 16px;
   box-shadow:
@@ -57,7 +57,7 @@ const number = computed(() => combinedNumber.value)
 .combined__label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  color: #38bdf8;
+  color: #0369a1;
   letter-spacing: 0.1em;
   font-weight: 700;
 }
@@ -67,11 +67,10 @@ const number = computed(() => combinedNumber.value)
   font-size: 44px;
   font-weight: 800;
   letter-spacing: 0.15em;
-  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+  background: linear-gradient(135deg, #0891b2 0%, #4f46e5 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
   line-height: 1;
 }
 </style>

@@ -99,8 +99,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
   gap: 10px;
   margin-top: 14px;
   padding: 8px 12px;
-  background: rgba(15, 23, 42, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 14px;
   backdrop-filter: blur(12px);
   flex-wrap: wrap;
@@ -115,10 +115,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
   min-width: 34px;
   height: 32px;
   padding: 0 8px;
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #f1f5f9;
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 8px;
-  color: #cbd5e1;
+  color: #334155;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -130,17 +130,17 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 }
 
 .chip:hover:not(:disabled) {
-  background: rgba(51, 65, 85, 0.8);
+  background: #e2e8f0;
   border-color: rgba(6, 182, 212, 0.4);
-  color: #38bdf8;
+  color: #0369a1;
   transform: translateY(-1px);
 }
 
 .chip:disabled {
-  color: #475569;
+  color: #94a3b8;
   border-color: transparent;
   cursor: not-allowed;
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(255, 255, 255, 0.92);
 }
 
 .chip--text {
@@ -151,7 +151,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 .bar__divider {
   width: 1px;
   height: 20px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.04);
 }
 
 .size {
@@ -177,7 +177,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
   height: 4px;
   -webkit-appearance: none;
   appearance: none;
-  background: #1e293b;
+  background: #e2e8f0;
   border-radius: 999px;
   outline: none;
   cursor: pointer;
@@ -190,7 +190,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
   height: 14px;
   border-radius: 50%;
   background: #06b6d4;
-  border: 2px solid #0f172a;
+  border: 2px solid #ffffff;
   box-shadow: 0 0 10px rgba(6, 182, 212, 0.8);
   cursor: pointer;
   transition: transform 0.15s;
@@ -205,14 +205,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
   height: 14px;
   border-radius: 50%;
   background: #06b6d4;
-  border: 2px solid #0f172a;
+  border: 2px solid #ffffff;
   cursor: pointer;
 }
 
 .size__val {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  color: #38bdf8;
+  color: #0369a1;
   font-weight: 600;
   min-width: 36px;
   text-align: right;

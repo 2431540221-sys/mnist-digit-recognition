@@ -234,9 +234,7 @@ onBeforeUnmount(() => {
   border-radius: 16px;
   background: #000000;
   overflow: hidden;
-  box-shadow:
-    0 0 25px rgba(6, 182, 212, 0.15),
-    inset 0 0 15px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -263,7 +261,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(2, 6, 23, 0.92);
+  background: rgba(248, 250, 252, 0.96);
   z-index: 10;
 }
 
@@ -278,23 +276,23 @@ onBeforeUnmount(() => {
   margin: 0;
   font-size: 14px;
   font-weight: 700;
-  color: #f87171;
+  color: #dc2626;
 }
 
 .error-desc {
   margin: 0;
   font-size: 11px;
-  color: #94a3b8;
+  color: #475569;
   line-height: 1.5;
 }
 
 .btn-retry {
   margin-top: 8px;
   padding: 6px 14px;
-  background: rgba(30, 41, 59, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.16);
   border-radius: 8px;
-  color: #cbd5e1;
+  color: #334155;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -333,7 +331,7 @@ onBeforeUnmount(() => {
   margin: 0;
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  color: #38bdf8;
+  color: #0369a1;
 }
 
 /* Khung ngắm Viewfinder */

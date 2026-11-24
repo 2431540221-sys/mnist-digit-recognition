@@ -9,3 +9,4 @@ const BASE = (typeof __API_BASE__ !== 'undefined' && __API_BASE__) || '/api'
 export const API_URL = `${BASE}/predict`
 export const API_DEBUG_URL = `${BASE}/debug-segments`
 export const API_HEALTH_URL = `${BASE}/health`
+export const API_MODEL_INFO_URL = `${BASE}/model-info`
