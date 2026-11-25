@@ -10,6 +10,7 @@ Module huấn luyện mô hình CNN nhận diện chữ số viết tay MNIST:
 import os
 import sys
 import shutil
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.models import Sequential
@@ -127,7 +128,6 @@ EPOCHS = 25
 print("\n[5/5] Bắt đầu quá trình huấn luyện...")
 history = model.fit(
     datagen.flow(X_train, y_train, batch_size=BATCH_SIZE),
-    steps_per_epoch=len(X_train) // BATCH_SIZE,
     epochs=EPOCHS,
     validation_data=(X_test, y_test),
     callbacks=callbacks,
@@ -148,3 +148,30 @@ if os.path.exists(MODEL_PATH_ROOT):
     print(f"Đã lưu mô hình tốt nhất vào:")
     print(f"  - {MODEL_PATH_ROOT}")
     print(f"  - {MODEL_PATH_BACKEND}")
+
+# Hình 3.4: vẽ đồ thị accuracy / loss theo epoch từ history
+import json
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+os.makedirs('report_figures', exist_ok=True)
+h = history.history
+with open('report_figures/history.json', 'w', encoding='utf-8') as f:
+    json.dump({k: [float(x) for x in v] for k, v in h.items()}, f, indent=2)
+
+epochs = range(1, len(h['accuracy']) + 1)
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4))
+ax1.plot(epochs, h['accuracy'], label='accuracy (train)')
+ax1.plot(epochs, h['val_accuracy'], label='val_accuracy')
+ax1.set_xlabel('Epoch'); ax1.set_ylabel('Accuracy'); ax1.legend(); ax1.grid(alpha=0.3)
+ax2.plot(epochs, h['loss'], label='loss (train)')
+ax2.plot(epochs, h['val_loss'], label='val_loss')
+ax2.set_xlabel('Epoch'); ax2.set_ylabel('Loss'); ax2.legend(); ax2.grid(alpha=0.3)
+plt.tight_layout()
+plt.savefig('report_figures/hinh_3_4_accuracy_loss.png', dpi=200)
+best = int(np.argmax(h['val_accuracy'])) + 1
+print(f"Số epoch đã chạy: {len(h['accuracy'])}; epoch tốt nhất: {best}; "
+      f"val_accuracy tốt nhất: {max(h['val_accuracy']) * 100:.2f}%; "
+      f"val_loss tương ứng: {h['val_loss'][best - 1]:.4f}")
+print("Đã lưu hình 3.4 vào report_figures/hinh_3_4_accuracy_loss.png")
